@@ -2,6 +2,9 @@ locals {
   admin    = lookup(var.model, "admin", {})
   defaults = lookup(var.model, "defaults", {})
 
+  #=============================================
+  # Configuration Backups
+  #=============================================
   configuration_backups = {
     for v in lookup(local.admin, "configuration_backups", []) : v.name => {
       annotation = lookup(v, "annotation", local.defaults.annotation)
@@ -79,6 +82,64 @@ locals {
     ]) : i.remote_host => i
   }
 
+  #=============================================
+  # Authentication
+  #=============================================
+  authentication = {
+    for v in lookup(local.admin, "authentication", []) : v.name => {
+      annotation = lookup(v, "annotation", local.defaults.annotation)
+      remote_user_login_policy = lookup(
+        v, "remote_user_login_policy", local.defaults.admin.authentication.remote_user_login_policy
+      )
+      icmp_reachability = {
+        retries = lookup(lookup(
+          v, "icmp_reachability", local.defaults.admin.authentication.icmp_reachability
+          ), "retries", local.defaults.admin.authentication.icmp_reachability.retries
+        )
+        timeout = lookup(lookup(
+          v, "icmp_reachability", local.defaults.admin.authentication.icmp_reachability
+          ), "timeout", local.defaults.admin.authentication.icmp_reachability.timeout
+        )
+        use_icmp_reachable_providers_only = lookup(lookup(
+          v, "icmp_reachability", local.defaults.admin.authentication.icmp_reachability
+          ), "use_icmp_reachable_providers_only", local.defaults.admin.authentication.icmp_reachability.use_icmp_reachable_providers_only
+        )
+      }
+    }
+  }
+  console = {
+    for v in lookup(local.admin, "authentication", []) : v.name => {
+      annotation   = lookup(v, "annotation", local.defaults.annotation)
+      login_domain = lookup(v, "login_domain", "")
+      realm = length(regexall(
+        "duo_proxy_ldap", lookup(v, "realm", "local"))
+        ) > 0 ? "ldap" : length(regexall(
+        "duo_proxy_radius", lookup(v, "realm", "local"))
+      ) > 0 ? "radius" : lookup(v, "realm", "local")
+      realm_sub_type = length(regexall(
+        "duo", lookup(v, "realm", "local"))
+      ) > 0 ? "duo" : "default"
+    }
+  }
+  default = {
+    for v in lookup(local.admin, "authentication", []) : v.name => {
+      annotation                   = lookup(v, "annotation", local.defaults.annotation)
+      fallback_domain_avialability = lookup(v, "fallback_domain_avialability", true)
+      login_domain                 = lookup(v, "login_domain", "")
+      realm = length(regexall(
+        "duo_proxy_ldap", lookup(v, "realm", "local"))
+        ) > 0 ? "ldap" : length(regexall(
+        "duo_proxy_radius", lookup(v, "realm", "local"))
+      ) > 0 ? "radius" : lookup(v, "realm", "local")
+      realm_sub_type = length(regexall(
+        "duo", lookup(v, "realm", "local"))
+      ) > 0 ? "duo" : "default"
+    }
+  }
+
+  #=============================================
+  # RADIUS
+  #=============================================
   radius = {
     for v in lookup(local.admin, "radius", []) : v.login_domain => {
       annotation             = lookup(v, "annotation", local.defaults.annotation)
@@ -126,6 +187,9 @@ locals {
     ]) : i.host => i
   }
 
+  #=============================================
+  # TACACS+
+  #=============================================
   tacacs = {
     for v in lookup(local.admin, "tacacs", []) : v.login_domain => {
       accounting_include = [
