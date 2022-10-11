@@ -1,25 +1,5 @@
 /*_____________________________________________________________________________________________________________________
 
-RADIUS — Variables
-_______________________________________________________________________________________________________________________
-*/
-variable "radius_key" {
-  default     = ""
-  description = "RADIUS Key."
-  sensitive   = true
-  type        = string
-}
-
-variable "radius_monitoring_password" {
-  default     = ""
-  description = "RADIUS Monitoring Password."
-  sensitive   = true
-  type        = string
-}
-
-
-/*_____________________________________________________________________________________________________________________
-
 API Information:
  - Class: "aaaRadiusProvider"
  - Distinguished Name: "uni/userext/radiusext/radiusprovider-{{host}}"

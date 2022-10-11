@@ -1,24 +1,5 @@
 /*_____________________________________________________________________________________________________________________
 
-TACACS+ — Variables
-_______________________________________________________________________________________________________________________
-*/
-variable "tacacs_key" {
-  default     = ""
-  description = "TACACS Key."
-  sensitive   = true
-  type        = string
-}
-
-variable "tacacs_monitoring_password" {
-  default     = ""
-  description = "TACACS Monitoring Password."
-  sensitive   = true
-  type        = string
-}
-
-/*_____________________________________________________________________________________________________________________
-
 API Information:
  - Class: "tacacsGroup"
  - Distinguished Name: "uni/fabric/tacacsgroup-{accounting_destination_group}"
@@ -115,13 +96,13 @@ resource "aci_tacacs_source" "tacacs_sources" {
   annotation = each.value.annotation
   incl = compact(concat([
     length(regexall(
-    true, each.value.accounting_include[0].audit_logs)) > 0 ? "audit" : ""], [
+    true, each.value.accounting_include.audit_logs)) > 0 ? "audit" : ""], [
     length(regexall(
-    true, each.value.accounting_include[0].events)) > 0 ? "events" : ""], [
+    true, each.value.accounting_include.events)) > 0 ? "events" : ""], [
     length(regexall(
-    true, each.value.accounting_include[0].faults)) > 0 ? "faults" : ""], [
+    true, each.value.accounting_include.faults)) > 0 ? "faults" : ""], [
     length(regexall(
-    true, each.value.accounting_include[0].session_logs)) > 0 ? "session" : ""]
+    true, each.value.accounting_include.session_logs)) > 0 ? "session" : ""]
   ))
   name                          = each.key
   parent_dn                     = "uni/fabric/moncommon"

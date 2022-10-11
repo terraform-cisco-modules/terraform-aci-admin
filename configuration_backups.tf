@@ -1,30 +1,3 @@
-/*_____________________________________________________________________________________________________________________
-
-Configuration Backups - Admin > Import/Export Policies
-_______________________________________________________________________________________________________________________
-*/
-variable "remote_password" {
-  default     = ""
-  description = "Remote Host Password."
-  sensitive   = true
-  type        = string
-}
-
-variable "ssh_key_contents" {
-  default     = ""
-  description = "SSH Private Key Based Authentication Contents."
-  sensitive   = true
-  type        = string
-}
-
-variable "ssh_key_passphrase" {
-  default     = ""
-  description = "SSH Private Key Based Authentication Passphrase."
-  sensitive   = true
-  type        = string
-}
-
-
 #----------------------------------------------
 # Create a Triggered Scheduler
 #----------------------------------------------
