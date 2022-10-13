@@ -313,7 +313,7 @@ locals {
           syslog_policy       = v.syslog_policy
         }
       ]
-    ]) : "${i.syslog_policy}_${i.host}" => i
+    ]) : "${i.syslog_policy}-${i.host}" => i
   }
 
 
