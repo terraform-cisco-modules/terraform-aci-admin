@@ -231,7 +231,7 @@ locals {
           rfc_compliant = lookup(v, "rfc_compliant", local.scallhome.smart_destinations.rfc_compliant)
         }
       ]
-    ]) : "${i.policy}-${i.name}" => i
+    ]) : "${i.policy}:${i.name}" => i
   }
 
 
@@ -313,7 +313,7 @@ locals {
           syslog_policy       = v.syslog_policy
         }
       ]
-    ]) : "${i.syslog_policy}-${i.host}" => i
+    ]) : "${i.syslog_policy}:${i.host}" => i
   }
 
 
