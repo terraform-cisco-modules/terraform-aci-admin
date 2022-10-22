@@ -11,6 +11,58 @@ variable "model" {
 
 /*_____________________________________________________________________________________________________________________
 
+Global Shared Variables
+_______________________________________________________________________________________________________________________
+*/
+
+
+variable "annotation" {
+  default     = "orchestrator:terraform:easy-aci-v2.0"
+  description = "The Version of this Script."
+  type        = string
+}
+
+variable "annotations" {
+  default = [
+    {
+      key   = "orchestrator"
+      value = "terraform:easy-aci:v2.0"
+    }
+  ]
+  description = "The Version of this Script."
+  type = list(object(
+    {
+      key   = string
+      value = string
+    }
+  ))
+}
+
+variable "management_epgs" {
+  default = [
+    {
+      name = "default"
+      type = "oob"
+    }
+  ]
+  description = <<-EOT
+    The Management EPG's that will be used by the script.
+    - name: Name of the EPG
+    - type: Type of EPG
+      * inb
+      * oob
+  EOT
+  type = list(object(
+    {
+      name = string
+      type = string
+    }
+  ))
+}
+
+
+/*_____________________________________________________________________________________________________________________
+
 Admin > AAA > Authentication: RADIUS — Sensitive Variables
 _______________________________________________________________________________________________________________________
 */

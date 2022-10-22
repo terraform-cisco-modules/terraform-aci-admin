@@ -45,7 +45,7 @@ ________________________________________________________________________________
 */
 resource "aci_default_authentication" "default" {
   for_each       = { for k, v in local.default : k => v }
-  annotation     = lookup(each.value, "annotation", local.defaults.annotation)
+  annotation     = lookup(each.value, "annotation", var.annotation)
   fallback_check = each.value.fallback_domain_avialability
   provider_group = each.value.login_domain
   realm          = each.value.realm

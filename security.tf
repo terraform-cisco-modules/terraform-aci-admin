@@ -9,7 +9,7 @@ ________________________________________________________________________________
 */
 resource "aci_global_security" "security" {
   for_each   = { for v in lookup(local.aaa, "security", []) : "default" => v }
-  annotation = lookup(each.value, "annotation", local.defaults.annotation)
+  annotation = lookup(each.value, "annotation", var.annotation)
   block_duration = lookup(lookup(
     each.value, "lockout_user", local.security.lockout_user
   ), "lockout_duration", local.security.lockout_user.lockout_duration)

@@ -18,7 +18,7 @@ locals {
   #=============================================
   configuration_backups = {
     for v in lookup(local.export, "configuration_backups", []) : v.name => {
-      annotation = coalesce(lookup(v, "annotation", local.config.annotation), local.defaults.annotation)
+      annotation = coalesce(lookup(v, "annotation", local.config.annotation), var.annotation)
       authentication_type = length(compact([var.ssh_key_contents, var.ssh_key_contents])
       ) > 0 ? "useSshKeyContents" : "usePassword"
       description = lookup(v, "description", local.config.description)
@@ -27,7 +27,7 @@ locals {
         v, "include_secure_fields", local.config.include_secure_fields
       )
       management_epg = lookup(v, "management_epg", local.config.management_epg)
-      mgmt_epg_type = local.defaults.management_epgs[index(local.defaults.management_epgs.*.name,
+      mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
         lookup(v, "management_epg", local.config.management_epg))
       ].type
       max_snapshot_count = lookup(v, "max_snapshot_count", local.config.max_snapshot_count)
@@ -90,7 +90,7 @@ locals {
   #=============================================
   authentication = {
     for v in lookup(local.auth, "aaa", []) : v.name => {
-      annotation = lookup(v, "annotation", local.defaults.annotation)
+      annotation = lookup(v, "annotation", var.annotation)
       remote_user_login_policy = lookup(
         v, "remote_user_login_policy", local.AUTH.remote_user_login_policy
       )
@@ -104,7 +104,7 @@ locals {
   }
   console = {
     for v in lookup(local.auth, "aaa", []) : v.name => {
-      annotation   = lookup(v, "annotation", local.defaults.annotation)
+      annotation   = lookup(v, "annotation", var.annotation)
       login_domain = lookup(v, "login_domain", "")
       realm = length(regexall(
         "duo_proxy_ldap", lookup(v, "realm", "local"))
@@ -118,7 +118,7 @@ locals {
   }
   default = {
     for v in lookup(local.auth, "aaa", []) : v.name => {
-      annotation = lookup(v, "annotation", local.defaults.annotation)
+      annotation = lookup(v, "annotation", var.annotation)
       fallback_domain_avialability = lookup(
         v, "fallback_domain_avialability", local.AUTH.default.fallback_domain_avialability
       )
@@ -139,11 +139,11 @@ locals {
   #=============================================
   radius = {
     for v in lookup(local.auth, "radius", []) : v.login_domain => {
-      annotation             = lookup(v, "annotation", local.defaults.annotation)
+      annotation             = lookup(v, "annotation", var.annotation)
       authorization_protocol = lookup(v, "authorization_protocol", local.RADIUS.authorization_protocol)
       hosts                  = v.hosts
       management_epg         = lookup(v, "management_epg", local.RADIUS.management_epg)
-      mgmt_epg_type = local.defaults.management_epgs[index(local.defaults.management_epgs.*.name,
+      mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
         lookup(v, "management_epg", local.RADIUS.management_epg))
       ].type
       login_domain = v.login_domain
@@ -189,7 +189,7 @@ locals {
     for v in lookup(local.ext_data, "smart_callhome", []) : v.name => {
       admin_state = lookup(v, "admin_state", local.scallhome.admin_state)
       annotation = coalesce(
-        lookup(v, "annotation", local.scallhome.annotation), local.defaults.annotation
+        lookup(v, "annotation", local.scallhome.annotation), var.annotation
       )
       contact_information    = lookup(v, "contact_information", local.scallhome.contact_information)
       contract_id            = lookup(v, "contract_id", local.scallhome.contract_id)
@@ -204,8 +204,8 @@ locals {
       smtp_server = [
         for i in lookup(v, "smtp_server", []) : {
           management_epg = lookup(i, "management_epg", local.scallhome.smtp_server.management_epg)
-          mgmt_epg_type = local.defaults.management_epgs[index(local.defaults.management_epgs.*.name,
-            lookup(v, "management_epg", local.scallhome.smtp_server.management_epg))
+          mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
+            lookup(i, "management_epg", local.scallhome.smtp_server.management_epg))
           ].type
           port_number = lookup(i, "port_number", local.scallhome.smtp_server.port_number)
           secure_smtp = length(compact(
@@ -244,7 +244,7 @@ locals {
     for v in lookup(local.ext_data, "syslog", []) : v.name => {
       admin_state = lookup(v, "admin_state", local.SYSLOG.admin_state)
       annotation = coalesce(lookup(v, "annotation", local.SYSLOG.annotation
-      ), local.defaults.annotation)
+      ), var.annotation)
       description = lookup(v, "description", local.SYSLOG.description)
       console_destination = {
         admin_state = lookup(lookup(v, "console_destination", {}
@@ -287,7 +287,7 @@ locals {
         forwarding_facility = lookup(v, "forwarding_facility", local.SYSLOG.remote_destinations.forwarding_facility)
         hosts               = v.hosts
         management_epg      = lookup(v, "management_epg", local.SYSLOG.remote_destinations.management_epg)
-        mgmt_epg_type = local.defaults.management_epgs[index(local.defaults.management_epgs.*.name,
+        mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
           lookup(v, "management_epg", local.SYSLOG.remote_destinations.management_epg))
         ].type
         port          = lookup(v, "port", local.SYSLOG.remote_destinations.port)
@@ -333,11 +333,11 @@ locals {
         ), "session_logs", local.TACACS.accounting_include.session_logs)
       }
       annotation = coalesce(lookup(v, "annotation", local.TACACS.annotation
-      ), local.defaults.annotation)
+      ), var.annotation)
       authorization_protocol = lookup(v, "authorization_protocol", local.TACACS.authorization_protocol)
       hosts                  = lookup(v, "hosts", local.TACACS.hosts)
       management_epg         = lookup(v, "management_epg", local.TACACS.management_epg)
-      mgmt_epg_type = local.defaults.management_epgs[index(local.defaults.management_epgs.*.name,
+      mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
         lookup(v, "management_epg", local.TACACS.management_epg))
       ].type
       login_domain = v.login_domain
