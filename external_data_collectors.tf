@@ -33,11 +33,11 @@ resource "aci_rest_managed" "smart_callhome_destination_groups_callhome_profile"
     from       = each.value.from_email
     replyTo    = each.value.reply_to_email
     phone      = each.value.phone_contact
-    port       = each.value.smtp_server[0].port_number
-    pwd        = each.value.smtp_server[0].secure_smtp == true ? var.smtp_password : ""
-    secureSmtp = each.value.smtp_server[0].secure_smtp == true ? "yes" : "no"
+    port       = each.value.smtp_server.port_number
+    pwd        = each.value.smtp_server.secure_smtp == true ? var.smtp_password : ""
+    secureSmtp = each.value.smtp_server.secure_smtp == true ? "yes" : "no"
     site       = each.value.site_id
-    username   = each.value.smtp_server[0].username
+    username   = each.value.smtp_server.username
   }
 }
 
@@ -50,14 +50,13 @@ resource "aci_rest_managed" "smart_callhome_smtp_servers" {
   dn         = "uni/fabric/smartgroup-${each.key}/prof/smtp"
   content = {
     # annotation = each.value.annotation
-    host = each.value.smtp_server[0].host
+    host = each.value.smtp_server.smtp_server
   }
   child {
     rn         = "rsARemoteHostToEpg"
     class_name = "fileRsARemoteHostToEpg"
     content = {
-      tDn = "uni/tn-mgmt/mgmtp-default/${each.value.smtp_server[0
-      ].mgmt_epg_type}-${each.value.smtp_server[0].management_epg}"
+      tDn = "uni/tn-mgmt/mgmtp-default/${each.value.smtp_server.mgmt_epg_type}-${each.value.smtp_server.management_epg}"
     }
   }
 }

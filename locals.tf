@@ -201,20 +201,22 @@ locals {
       reply_to_email         = lookup(v, "reply_to_email", local.scallhome.reply_to_email)
       site_id                = lookup(v, "site_id", local.scallhome.site_id)
       smart_destinations     = lookup(v, "smart_destinations", [])
-      smtp_server = [
-        for i in lookup(v, "smtp_server", []) : {
-          management_epg = lookup(i, "management_epg", local.scallhome.smtp_server.management_epg)
-          mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
-            lookup(i, "management_epg", local.scallhome.smtp_server.management_epg))
-          ].type
-          port_number = lookup(i, "port_number", local.scallhome.smtp_server.port_number)
-          secure_smtp = length(compact(
-            [lookup(i, "username", local.scallhome.smtp_server.username)]
-          )) > 0 ? true : false
-          host     = i.host
-          username = lookup(i, "username", local.scallhome.smtp_server.username)
-        }
-      ]
+      smtp_server = {
+        management_epg = lookup(lookup(
+        v, "smtp_server", {}), "management_epg", local.scallhome.smtp_server.management_epg)
+        mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
+          lookup(lookup(v, "smtp_server", {}
+        ), "management_epg", local.scallhome.smtp_server.management_epg))].type
+        port_number = lookup(lookup(
+        v, "smtp_server", {}), "port_number", local.scallhome.smtp_server.port_number)
+        secure_smtp = length(compact(
+          [lookup(lookup(v, "smtp_server", {}), "username", local.scallhome.smtp_server.username)]
+        )) > 0 ? true : false
+        smtp_server = lookup(lookup(v, "smtp_server", {}
+        ), "smtp_server", local.scallhome.smtp_server.username)
+        username = lookup(lookup(
+        v, "smtp_server", {}), "username", local.scallhome.smtp_server.username)
+      }
       street_address = lookup(v, "street_address", local.scallhome.street_address)
     }
   }
