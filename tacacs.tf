@@ -108,30 +108,3 @@ resource "aci_tacacs_source" "tacacs_sources" {
   parent_dn                     = "uni/fabric/moncommon"
   relation_tacacs_rs_dest_group = aci_tacacs_accounting.tacacs_accounting[each.key].id
 }
-
-resource "aci_login_domain" "login_domain_tacacs" {
-  depends_on = [
-    aci_tacacs_provider.tacacs_providers
-  ]
-  for_each       = { for k, v in local.tacacs : k => v }
-  annotation     = each.value.annotation
-  description    = "${each.key} Login Domain."
-  name           = each.key
-  provider_group = each.key
-  realm          = "tacacs"
-  realm_sub_type = "default"
-}
-
-resource "aci_login_domain_provider" "aci_login_domain_provider_tacacs" {
-  depends_on = [
-    aci_login_domain.login_domain_tacacs,
-    aci_tacacs_provider.tacacs_providers,
-    aci_tacacs_provider_group.tacacs_provider_groups
-  ]
-  for_each    = local.tacacs_providers
-  annotation  = each.value.annotation
-  description = "${each.value.host} Login Domain Provider."
-  name        = each.key
-  order       = each.value.order
-  parent_dn   = aci_tacacs_provider_group.tacacs_provider_groups[each.value.login_domain].id
-}

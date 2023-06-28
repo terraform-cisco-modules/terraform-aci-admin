@@ -1,17 +1,44 @@
 locals {
-  aaa       = lookup(local.admin, "aaa", {})
   admin     = lookup(var.model, "admin", {})
-  auth      = lookup(local.aaa, "authentication", {})
-  AUTH      = local.defaults.admin.aaa.authentication.aaa
-  config    = local.defaults.admin.import-export.configuration_backups
   defaults  = lookup(var.model, "defaults", {})
-  export    = lookup(local.admin, "import-export", {})
-  ext_data  = lookup(local.admin, "external-data-collectors", {})
+  config    = local.defaults.admin.import_export.configuration_backups
+  export    = lookup(local.admin, "import_export", {})
+  ext_data  = lookup(local.admin, "external_data_collectors", {})
   RADIUS    = local.defaults.admin.aaa.authentication.radius
-  scallhome = local.defaults.admin.external-data-collectors.smart_callhome
-  security  = local.defaults.admin.aaa.security
-  SYSLOG    = local.defaults.admin.external-data-collectors.syslog
+  radius1   = lookup(lookup(lookup(local.admin, "aaa", {}), "authentication", {}), "radius", {})
+  scallhome = local.defaults.admin.external_data_collectors.smart_callhome
+  SYSLOG    = local.defaults.admin.external_data_collectors.syslog
   TACACS    = local.defaults.admin.aaa.authentication.tacacs
+  tac_plus  = lookup(lookup(lookup(local.admin, "aaa", {}), "authentication", {}), "tacacs", {})
+
+  #=============================================
+  # AAA => Authentication => AAA
+  #=============================================
+  AAA     = local.defaults.admin.aaa.authentication.aaa
+  aaa     = lookup(local.auth, "aaa", {})
+  auth    = lookup(lookup(local.admin, "aaa", {}), "authentication", {})
+  CONSOLE = local.AAA.console
+  console = length(local.auth) > 0 ? { "default" : merge(
+    { create = true }, local.AAA.console, lookup(local.aaa, "console", {})
+  ) } : { "default" : merge({ create = false }, local.AAA.console) }
+  DEFAULT = local.AAA.default
+  default = length(local.auth) > 0 ? { "default" : merge(
+    { create = true }, local.AAA.default, lookup(local.aaa, "default", {})
+  ) } : { "default" : merge({ create = false }, local.AAA.console) }
+  ICMP = local.AAA.icmp_reachability
+  icmp_reachability = length(local.auth) > 0 ? { "default" : merge(
+    { create = true }, local.AAA.icmp_reachability, lookup(local.aaa, "icmp_reachability", {}
+    ), { "remote_user_login_policy" : lookup(local.aaa, "remote_user_login_policy", local.AAA.remote_user_login_policy) }
+  ) } : { "default" : merge({ create = false }, local.AAA.icmp_reachability) }
+
+
+  #=============================================
+  # AAA => Security
+  #=============================================
+  SECURITY = local.defaults.admin.aaa.security
+  security = length(lookup(local.admin, "aaa", {})) > 0 ? { "default" : merge(
+    { create = true }, local.SECURITY, lookup(lookup(local.admin, "aaa", {}), "security", {})
+  ) } : { "default" : merge({ create = false }, local.SECURITY) }
 
   #=============================================
   # Configuration Backups
@@ -60,79 +87,29 @@ locals {
       window_type = lookup(v, "window_type", local.config.window_type)
     }
   }
-  remote_locations = {
-    for i in flatten([
-      for v in local.configuration_backups : [
-        for s in v.remote_hosts : {
-          annotation            = v.annotation
-          authentication_type   = v.authentication_type
-          description           = v.description
-          format                = v.format
-          include_secure_fields = v.include_secure_fields
-          management_epg        = v.management_epg
-          mgmt_epg_type         = v.mgmt_epg_type
-          max_snapshot_count    = v.max_snapshot_count
-          protocol              = v.protocol
-          name                  = v.name
-          remote_host           = s
-          remote_path           = v.remote_path
-          remote_port           = v.remote_port
-          snapshot              = v.snapshot
-          start_now             = v.start_now
-          username              = v.username
-        }
-      ]
-    ]) : i.remote_host => i
-  }
-
-  #=============================================
-  # Authentication
-  #=============================================
-  authentication = {
-    for v in lookup(local.auth, "aaa", []) : v.name => {
-      annotation = lookup(v, "annotation", var.annotation)
-      remote_user_login_policy = lookup(
-        v, "remote_user_login_policy", local.AUTH.remote_user_login_policy
-      )
-      icmp_reachability = {
-        retries = lookup(lookup(v, "icmp_reachability", {}), "retries", local.AUTH.icmp_reachability.retries)
-        timeout = lookup(lookup(v, "icmp_reachability", {}), "timeout", local.AUTH.icmp_reachability.timeout)
-        use_icmp_reachable_providers_only = lookup(lookup(v, "icmp_reachability", {}
-        ), "use_icmp_reachable_providers_only", local.AUTH.icmp_reachability.use_icmp_reachable_providers_only)
+  remote_locations = { for i in flatten([
+    for v in local.configuration_backups : [
+      for s in v.remote_hosts : {
+        annotation            = v.annotation
+        authentication_type   = v.authentication_type
+        description           = v.description
+        format                = v.format
+        include_secure_fields = v.include_secure_fields
+        management_epg        = v.management_epg
+        mgmt_epg_type         = v.mgmt_epg_type
+        max_snapshot_count    = v.max_snapshot_count
+        protocol              = v.protocol
+        name                  = v.name
+        remote_host           = s
+        remote_path           = v.remote_path
+        remote_port           = v.remote_port
+        snapshot              = v.snapshot
+        start_now             = v.start_now
+        username              = v.username
       }
-    }
-  }
-  console = {
-    for v in lookup(local.auth, "aaa", []) : v.name => {
-      annotation   = lookup(v, "annotation", var.annotation)
-      login_domain = lookup(v, "login_domain", "")
-      realm = length(regexall(
-        "duo_proxy_ldap", lookup(v, "realm", "local"))
-        ) > 0 ? "ldap" : length(regexall(
-        "duo_proxy_radius", lookup(v, "realm", "local"))
-      ) > 0 ? "radius" : lookup(v, "realm", "local")
-      realm_sub_type = length(regexall(
-        "duo", lookup(v, "realm", "local"))
-      ) > 0 ? "duo" : "default"
-    }
-  }
-  default = {
-    for v in lookup(local.auth, "aaa", []) : v.name => {
-      annotation = lookup(v, "annotation", var.annotation)
-      fallback_domain_avialability = lookup(
-        v, "fallback_domain_avialability", local.AUTH.default.fallback_domain_avialability
-      )
-      login_domain = lookup(v, "login_domain", "")
-      realm = length(regexall(
-        "duo_proxy_ldap", lookup(v, "realm", "local"))
-        ) > 0 ? "ldap" : length(regexall(
-        "duo_proxy_radius", lookup(v, "realm", "local"))
-      ) > 0 ? "radius" : lookup(v, "realm", "local")
-      realm_sub_type = length(regexall(
-        "duo", lookup(v, "realm", "local"))
-      ) > 0 ? "duo" : "default"
-    }
-  }
+    ]
+  ]) : i.remote_host => i }
+
 
   #=============================================
   # RADIUS
@@ -159,26 +136,26 @@ locals {
       type    = lookup(v, "type", local.RADIUS.type)
     }
   }
-  radius_providers = {
-    for i in flatten([
-      for v in local.radius : [
-        for s in range(length(v.hosts)) : {
-          annotation             = v.annotation
-          authorization_protocol = v.authorization_protocol
-          host                   = element(v.hosts, s)
-          management_epg         = v.management_epg
-          mgmt_epg_type          = v.mgmt_epg_type
-          login_domain           = v.login_domain
-          order                  = s
-          port                   = v.port
-          retries                = v.retries
-          server_monitoring      = v.server_monitoring
-          timeout                = v.timeout
-          type                   = v.type
-        }
-      ]
-    ]) : i.host => i
-  }
+  radius_providers = { for i in flatten([
+    for v in local.radius : [
+      for s in range(length(v.hosts)) : {
+        annotation             = v.annotation
+        authorization_protocol = v.authorization_protocol
+        host                   = element(v.hosts, s)
+        management_epg         = v.management_epg
+        mgmt_epg_type          = v.mgmt_epg_type
+        login_domain           = v.login_domain
+        order                  = s
+        port                   = v.port
+        retries                = v.retries
+        server_monitoring      = v.server_monitoring
+        timeout                = v.timeout
+        type                   = v.type
+      }
+    ]
+  ]) : i.host => i }
+  radius_list     = [for k, v in local.radius : v]
+  rproviders_list = [for k, v in local.radius_providers : v]
 
   #__________________________________________________________
   #
@@ -191,16 +168,24 @@ locals {
       annotation = coalesce(
         lookup(v, "annotation", local.scallhome.annotation), var.annotation
       )
-      contact_information    = lookup(v, "contact_information", local.scallhome.contact_information)
-      contract_id            = lookup(v, "contract_id", local.scallhome.contract_id)
-      customer_contact_email = lookup(v, "customer_contact_email", local.scallhome.customer_contact_email)
-      customer_id            = lookup(v, "customer_id", local.scallhome.customer_id)
-      description            = lookup(v, "description", local.scallhome.description)
-      from_email             = lookup(v, "from_email", local.scallhome.from_email)
-      phone_contact          = lookup(v, "phone_contact", local.scallhome.phone_contact)
-      reply_to_email         = lookup(v, "reply_to_email", local.scallhome.reply_to_email)
-      site_id                = lookup(v, "site_id", local.scallhome.site_id)
-      smart_destinations     = lookup(v, "smart_destinations", [])
+      contact_information = lookup(v, "contact_information", lookup(
+        v, "customer_contact_email", local.scallhome.customer_contact_email)
+      )
+      contract_id = lookup(v, "contract_id", local.scallhome.contract_id)
+      customer_contact_email = lookup(
+        v, "customer_contact_email", local.scallhome.customer_contact_email
+      )
+      customer_id = lookup(v, "customer_id", local.scallhome.customer_id)
+      description = lookup(v, "description", local.scallhome.description)
+      from_email = lookup(v, "from_email", lookup(
+        v, "customer_contact_email", local.scallhome.customer_contact_email)
+      )
+      phone_contact = lookup(v, "phone_contact", local.scallhome.phone_contact)
+      reply_to_email = lookup(v, "reply_to_email", lookup(
+        v, "customer_contact_email", local.scallhome.customer_contact_email)
+      )
+      site_id            = lookup(v, "site_id", local.scallhome.site_id)
+      smart_destinations = lookup(v, "smart_destinations", [])
       smtp_server = {
         management_epg = lookup(lookup(
         v, "smtp_server", {}), "management_epg", local.scallhome.smtp_server.management_epg)
@@ -213,28 +198,26 @@ locals {
           [lookup(lookup(v, "smtp_server", {}), "username", local.scallhome.smtp_server.username)]
         )) > 0 ? true : false
         smtp_server = lookup(lookup(v, "smtp_server", {}
-        ), "smtp_server", local.scallhome.smtp_server.username)
+        ), "host", local.scallhome.smtp_server.username)
         username = lookup(lookup(
         v, "smtp_server", {}), "username", local.scallhome.smtp_server.username)
       }
       street_address = lookup(v, "street_address", local.scallhome.street_address)
     }
   }
-  smart_callhome_destinations = {
-    for i in flatten([
-      for key, value in local.smart_callhome : [
-        for k, v in value.smart_destinations : {
-          admin_state   = lookup(v, "admin_state", local.scallhome.smart_destinations.admin_state)
-          annotation    = value.annotation
-          email         = v.email
-          format        = lookup(v, "format", local.scallhome.smart_destinations.format)
-          policy        = key
-          name          = element(split("@", v.email), 0)
-          rfc_compliant = lookup(v, "rfc_compliant", local.scallhome.smart_destinations.rfc_compliant)
-        }
-      ]
-    ]) : "${i.policy}:${i.name}" => i
-  }
+  smart_callhome_destinations = { for i in flatten([
+    for key, value in local.smart_callhome : [
+      for k, v in value.smart_destinations : {
+        admin_state   = lookup(v, "admin_state", local.scallhome.smart_destinations.admin_state)
+        annotation    = value.annotation
+        email         = v.email
+        format        = lookup(v, "format", local.scallhome.smart_destinations.format)
+        policy        = key
+        name          = element(split("@", v.email), 0)
+        rfc_compliant = lookup(v, "rfc_compliant", local.scallhome.smart_destinations.rfc_compliant)
+      }
+    ]
+  ]) : "${i.policy}:${i.name}" => i }
 
 
   #__________________________________________________________
@@ -299,24 +282,22 @@ locals {
       }
     ]
   ])
-  syslog_remote_destinations = {
-    for i in flatten([
-      for v in local.syslog_destinations : [
-        for s in v.hosts : {
-          admin_state         = v.admin_state
-          annotation          = v.annotation
-          forwarding_facility = v.forwarding_facility
-          host                = s
-          management_epg      = v.management_epg
-          mgmt_epg_type       = v.mgmt_epg_type
-          port                = v.port
-          severity            = v.severity
-          transport           = v.transport
-          syslog_policy       = v.syslog_policy
-        }
-      ]
-    ]) : "${i.syslog_policy}:${i.host}" => i
-  }
+  syslog_remote_destinations = { for i in flatten([
+    for v in local.syslog_destinations : [
+      for s in v.hosts : {
+        admin_state         = v.admin_state
+        annotation          = v.annotation
+        forwarding_facility = v.forwarding_facility
+        host                = s
+        management_epg      = v.management_epg
+        mgmt_epg_type       = v.mgmt_epg_type
+        port                = v.port
+        severity            = v.severity
+        transport           = v.transport
+        syslog_policy       = v.syslog_policy
+      }
+    ]
+  ]) : "${i.syslog_policy}:${i.host}" => i }
 
 
   #=============================================
@@ -352,25 +333,30 @@ locals {
         ), "username", local.TACACS.server_monitoring.username)
       }
       timeout = lookup(v, "timeout", local.TACACS.timeout)
+      type    = "tacacs"
     }
   }
-  tacacs_providers = {
-    for i in flatten([
-      for v in local.tacacs : [
-        for s in range(length(v.hosts)) : {
-          annotation             = v.annotation
-          authorization_protocol = v.authorization_protocol
-          host                   = element(v.hosts, s)
-          management_epg         = v.management_epg
-          mgmt_epg_type          = v.mgmt_epg_type
-          login_domain           = v.login_domain
-          order                  = s
-          port                   = v.port
-          retries                = v.retries
-          server_monitoring      = v.server_monitoring
-          timeout                = v.timeout
-        }
-      ]
-    ]) : i.host => i
-  }
+  tacacs_providers = { for i in flatten([
+    for v in local.tacacs : [
+      for s in range(length(v.hosts)) : {
+        annotation             = v.annotation
+        authorization_protocol = v.authorization_protocol
+        host                   = element(v.hosts, s)
+        management_epg         = v.management_epg
+        mgmt_epg_type          = v.mgmt_epg_type
+        login_domain           = v.login_domain
+        order                  = s
+        port                   = v.port
+        retries                = v.retries
+        server_monitoring      = v.server_monitoring
+        timeout                = v.timeout
+        type                   = "tacacs"
+      }
+    ]
+  ]) : i.host => i }
+  tacacs_list     = [for k, v in local.tacacs : v]
+  tproviders_list = [for k, v in local.tacacs_providers : v]
+
+  login_domains   = concat(local.radius_list, local.tacacs_list)
+  login_providers = concat(local.rproviders_list, local.tproviders_list)
 }

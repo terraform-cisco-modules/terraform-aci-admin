@@ -69,35 +69,3 @@ resource "aci_duo_provider_group" "duo_provider_groups" {
   provider_type        = "radius"
   sec_fac_auth_methods = ["auto"]
 }
-
-resource "aci_login_domain" "login_domain" {
-  depends_on = [
-    aci_radius_provider.radius_providers,
-    aci_rsa_provider.rsa_providers
-  ]
-  for_each       = { for v in local.radius : v.login_domain => v }
-  annotation     = each.value.annotation
-  description    = "${each.key} Login Domain."
-  name           = each.key
-  provider_group = each.key
-  realm          = each.value.type == "rsa" ? "rsa" : "radius"
-  realm_sub_type = each.value.type == "duo" ? "duo" : "default"
-}
-
-resource "aci_login_domain_provider" "aci_login_domain_provider_radius" {
-  depends_on = [
-    aci_login_domain.login_domain,
-    aci_radius_provider_group.radius_provider_groups,
-    aci_duo_provider_group.duo_provider_groups
-  ]
-  for_each    = local.radius_providers
-  annotation  = each.value.annotation
-  description = "${each.value.host} Login Domain Provider."
-  name        = each.value.host
-  order       = each.value.order
-  parent_dn = length(regexall(
-    "duo", each.value.type)
-    ) > 0 ? aci_duo_provider_group.duo_provider_groups[each.value.login_domain].id : length(regexall(
-    "(radius|rsa)", each.value.type)
-  ) > 0 ? aci_radius_provider_group.radius_provider_groups[each.value.login_domain].id : ""
-}
