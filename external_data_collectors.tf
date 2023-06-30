@@ -18,7 +18,7 @@ resource "aci_rest_managed" "smart_callhome_destination_groups" {
   }
 }
 
-resource "aci_rest_managed" "smart_callhome_destination_groups_callhome_profile" {
+resource "aci_rest_managed" "smart_callhome_destination_group_properties" {
   for_each   = local.smart_callhome
   class_name = "callhomeProf"
   dn         = "uni/fabric/smartgroup-${each.key}/prof"
@@ -41,7 +41,7 @@ resource "aci_rest_managed" "smart_callhome_destination_groups_callhome_profile"
   }
 }
 
-resource "aci_rest_managed" "smart_callhome_smtp_servers" {
+resource "aci_rest_managed" "smart_callhome_smtp_server" {
   depends_on = [
     aci_rest_managed.smart_callhome_destination_groups
   ]

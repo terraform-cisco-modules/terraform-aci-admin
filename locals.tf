@@ -1,44 +1,41 @@
 locals {
-  admin     = lookup(var.model, "admin", {})
-  defaults  = lookup(var.model, "defaults", {})
-  config    = local.defaults.admin.import_export.configuration_backups
-  export    = lookup(local.admin, "import_export", {})
-  ext_data  = lookup(local.admin, "external_data_collectors", {})
-  RADIUS    = local.defaults.admin.aaa.authentication.radius
-  radius1   = lookup(lookup(lookup(local.admin, "aaa", {}), "authentication", {}), "radius", {})
-  scallhome = local.defaults.admin.external_data_collectors.smart_callhome
-  SYSLOG    = local.defaults.admin.external_data_collectors.syslog
-  TACACS    = local.defaults.admin.aaa.authentication.tacacs
-  tac_plus  = lookup(lookup(lookup(local.admin, "aaa", {}), "authentication", {}), "tacacs", {})
+  admin    = lookup(var.model, "admin", {})
+  defaults = lookup(var.model, "defaults", {})
+  config   = local.defaults.admin.import_export.configuration_backups
+  export   = lookup(local.admin, "import_export", {})
+  ext_data = lookup(local.admin, "external_data_collectors", {})
 
   #=============================================
   # AAA => Authentication => AAA
   #=============================================
-  AAA     = local.defaults.admin.aaa.authentication.aaa
-  aaa     = lookup(local.auth, "aaa", {})
-  auth    = lookup(lookup(local.admin, "aaa", {}), "authentication", {})
-  CONSOLE = local.AAA.console
-  console = length(local.auth) > 0 ? { "default" : merge(
-    { create = true }, local.AAA.console, lookup(local.aaa, "console", {})
-  ) } : { "default" : merge({ create = false }, local.AAA.console) }
-  DEFAULT = local.AAA.default
-  default = length(local.auth) > 0 ? { "default" : merge(
-    { create = true }, local.AAA.default, lookup(local.aaa, "default", {})
-  ) } : { "default" : merge({ create = false }, local.AAA.console) }
-  ICMP = local.AAA.icmp_reachability
-  icmp_reachability = length(local.auth) > 0 ? { "default" : merge(
-    { create = true }, local.AAA.icmp_reachability, lookup(local.aaa, "icmp_reachability", {}
-    ), { "remote_user_login_policy" : lookup(local.aaa, "remote_user_login_policy", local.AAA.remote_user_login_policy) }
-  ) } : { "default" : merge({ create = false }, local.AAA.icmp_reachability) }
+  auth     = lookup(lookup(local.admin, "aaa", {}), "authentication", {})
+  AUTH_SET = local.defaults.admin.aaa.authentication.authentication_default_settings
+  auth_set = lookup(local.auth, "authentication_default_settings", {})
+  console  = local.AUTH_SET.console_authentication
+  console_authentication = length(local.auth) > 0 ? {
+    "default" : merge({ create = true }, local.console, lookup(local.auth_set, "console_authentication", {})) } : {
+    "default" : merge({ create = false }, local.console)
+  }
+  default = local.AUTH_SET.default_authentication
+  default_authentication = length(local.auth) > 0 ? {
+    "default" : merge({ create = true }, local.default, lookup(local.auth_set, "default_authentication", {})) } : {
+    "default" : merge({ create = false }, local.default)
+  }
+  remote = local.AUTH_SET.remote_authentication
+  remote_authentication = length(local.auth) > 0 ? {
+    "default" : merge({ create = true }, local.remote, lookup(local.auth_set, "remote_authentication", {})) } : {
+    "default" : merge({ create = false }, local.remote)
+  }
 
 
   #=============================================
   # AAA => Security
   #=============================================
-  SECURITY = local.defaults.admin.aaa.security
-  security = length(lookup(local.admin, "aaa", {})) > 0 ? { "default" : merge(
-    { create = true }, local.SECURITY, lookup(lookup(local.admin, "aaa", {}), "security", {})
-  ) } : { "default" : merge({ create = false }, local.SECURITY) }
+  sec = local.defaults.admin.aaa.security
+  security = length(lookup(local.admin, "aaa", {})) > 0 ? {
+    "default" : merge({ create = true }, local.sec, lookup(lookup(local.admin, "aaa", {}), "security", {})) } : {
+    "default" : merge({ create = false }, local.sec)
+  }
 
   #=============================================
   # Configuration Backups
@@ -114,6 +111,8 @@ locals {
   #=============================================
   # RADIUS
   #=============================================
+  RADIUS  = local.defaults.admin.aaa.authentication.radius
+  radius1 = lookup(local.auth, "radius", {})
   radius = {
     for v in lookup(local.auth, "radius", []) : v.login_domain => {
       annotation             = lookup(v, "annotation", var.annotation)
@@ -161,7 +160,7 @@ locals {
   #
   # Smart CallHome
   #__________________________________________________________
-
+  scallhome = local.defaults.admin.external_data_collectors.smart_callhome
   smart_callhome = {
     for v in lookup(local.ext_data, "smart_callhome", []) : v.name => {
       admin_state = lookup(v, "admin_state", local.scallhome.admin_state)
@@ -224,7 +223,7 @@ locals {
   #
   # Syslog Variables
   #__________________________________________________________
-
+  SYSLOG = local.defaults.admin.external_data_collectors.syslog
   syslog = {
     for v in lookup(local.ext_data, "syslog", []) : v.name => {
       admin_state = lookup(v, "admin_state", local.SYSLOG.admin_state)
@@ -303,6 +302,8 @@ locals {
   #=============================================
   # TACACS+
   #=============================================
+  TACACS   = local.defaults.admin.aaa.authentication.tacacs
+  tac_plus = lookup(local.auth, "tacacs", {})
   tacacs = {
     for v in lookup(local.auth, "tacacs", []) : v.login_domain => {
       accounting_include = {
