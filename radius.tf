@@ -11,7 +11,6 @@ resource "aci_radius_provider" "radius_providers" {
   for_each       = { for k, v in local.radius_providers : k => v if length(regexall("duo|radius", v.type)) > 0 }
   auth_port      = each.value.port
   auth_protocol  = each.value.authorization_protocol
-  annotation     = each.value.annotation
   description    = "${each.value.host} Provider."
   key            = var.radius_key
   monitor_server = each.value.server_monitoring.admin_state == true ? "enabled" : "disabled"
@@ -30,7 +29,6 @@ resource "aci_rsa_provider" "rsa_providers" {
   for_each       = { for k, v in local.radius_providers : k => v if length(regexall("rsa", v.type)) > 0 }
   auth_port      = each.value.port
   auth_protocol  = each.value.authorization_protocol
-  annotation     = each.value.annotation
   description    = "${each.value.host} Provider."
   key            = var.radius_key
   monitor_server = each.value.server_monitoring.admin_state == true ? "enabled" : "disabled"
@@ -57,13 +55,11 @@ resource "aci_radius_provider_group" "radius_provider_groups" {
   for_each = {
     for v in local.radius : v.login_domain => v if length(regexall("(radius|rsa)", v.type)) > 0
   }
-  annotation = each.value.annotation
-  name       = each.key
+  name = each.key
 }
 
 resource "aci_duo_provider_group" "duo_provider_groups" {
   for_each             = { for k, v in local.radius : k => v if v.type == "duo" }
-  annotation           = each.value.annotation
   name                 = each.key
   auth_choice          = "CiscoAVPair"
   provider_type        = "radius"

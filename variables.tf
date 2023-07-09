@@ -3,7 +3,7 @@
 Model Data from Top Level Module
 _______________________________________________________________________________________________________________________
 */
-variable "model" {
+variable "admin" {
   description = "Model data."
   type        = any
 }
@@ -15,12 +15,6 @@ Global Shared Variables
 _______________________________________________________________________________________________________________________
 */
 
-
-variable "annotation" {
-  default     = "orchestrator:terraform:easy-aci-v2.0"
-  description = "The Version of this Script."
-  type        = string
-}
 
 variable "annotations" {
   default = [

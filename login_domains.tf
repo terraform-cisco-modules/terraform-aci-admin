@@ -5,7 +5,6 @@ resource "aci_login_domain" "login_domains" {
     aci_tacacs_provider.tacacs_providers
   ]
   for_each       = { for v in local.login_domains : v.login_domain => v }
-  annotation     = each.value.annotation
   description    = "${each.key} Login Domain."
   name           = each.key
   provider_group = each.key
@@ -22,7 +21,6 @@ resource "aci_login_domain_provider" "login_domain_providers" {
     aci_tacacs_provider_group.tacacs_provider_groups
   ]
   for_each    = { for v in local.login_providers : "${v.host}:${v.type}" => v }
-  annotation  = each.value.annotation
   description = "${each.value.host} ${upper(each.value.type)} Login Domain Provider."
   name        = each.value.host
   order       = each.value.order

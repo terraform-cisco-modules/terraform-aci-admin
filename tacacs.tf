@@ -8,7 +8,6 @@ GUI Location:
 */
 resource "aci_tacacs_accounting" "tacacs_accounting" {
   for_each    = { for k, v in local.tacacs : k => v }
-  annotation  = each.value.annotation
   description = "${each.key} Accounting"
   name        = each.key
 }
@@ -26,7 +25,6 @@ resource "aci_tacacs_accounting_destination" "tacacs_accounting_destinations" {
     aci_tacacs_accounting.tacacs_accounting
   ]
   for_each             = local.tacacs_providers
-  annotation           = each.value.annotation
   description          = "${each.key} Accounting Destination."
   host                 = each.key
   key                  = var.tacacs_key
@@ -49,7 +47,6 @@ ________________________________________________________________________________
 resource "aci_tacacs_provider" "tacacs_providers" {
   for_each       = local.tacacs_providers
   auth_protocol  = each.value.authorization_protocol
-  annotation     = each.value.annotation
   description    = "${each.key} TACACS+ Provider."
   key            = var.tacacs_key
   monitor_server = each.value.server_monitoring.admin_state == true ? "enabled" : "disabled"
@@ -74,9 +71,8 @@ GUI Location:
 _______________________________________________________________________________________________________________________
 */
 resource "aci_tacacs_provider_group" "tacacs_provider_groups" {
-  for_each   = { for k, v in local.tacacs : k => v }
-  annotation = each.value.annotation
-  name       = each.key
+  for_each = { for k, v in local.tacacs : k => v }
+  name     = each.key
 }
 
 /*_____________________________________________________________________________________________________________________
@@ -92,8 +88,7 @@ resource "aci_tacacs_source" "tacacs_sources" {
   depends_on = [
     aci_tacacs_accounting.tacacs_accounting
   ]
-  for_each   = { for k, v in local.tacacs : k => v }
-  annotation = each.value.annotation
+  for_each = { for k, v in local.tacacs : k => v }
   incl = compact(concat([
     length(regexall(
     true, each.value.accounting_include.audit_logs)) > 0 ? "audit" : ""], [

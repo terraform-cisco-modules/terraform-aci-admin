@@ -12,7 +12,6 @@ resource "aci_rest_managed" "smart_callhome_destination_groups" {
   class_name = "callhomeSmartGroup"
   dn         = "uni/fabric/smartgroup-${each.key}"
   content = {
-    # annotation = each.value.annotation
     descr = each.value.description
     name  = each.key
   }
@@ -25,7 +24,6 @@ resource "aci_rest_managed" "smart_callhome_destination_group_properties" {
   content = {
     addr       = each.value.street_address
     adminState = each.value.admin_state
-    # annotation = each.value.annotation
     contract   = each.value.contract_id
     contact    = each.value.contact_information
     customer   = each.value.customer_id
@@ -49,7 +47,6 @@ resource "aci_rest_managed" "smart_callhome_smtp_server" {
   class_name = "callhomeSmtpServer"
   dn         = "uni/fabric/smartgroup-${each.key}/prof/smtp"
   content = {
-    # annotation = each.value.annotation
     host = each.value.smtp_server.smtp_server
   }
   child {
@@ -79,7 +76,6 @@ resource "aci_rest_managed" "smart_callhome_destinations" {
   class_name = "callhomeSmartDest"
   dn         = "uni/fabric/smartgroup-${each.value.policy}/smartdest-${each.value.name}"
   content = {
-    # annotation   = each.value.annotation
     adminState   = each.value.admin_state
     email        = each.value.email
     format       = each.value.format
@@ -106,7 +102,6 @@ resource "aci_rest_managed" "smart_callhome_source" {
   dn         = "uni/fabric/moncommon/smartchsrc"
   class_name = "callhomeSmartSrc"
   content = {
-    # annotation = each.value.annotation
     # incl = alltrue(
     #   [
     #     each.value.include_types[0].audit_logs,
@@ -152,7 +147,6 @@ resource "aci_rest_managed" "syslog_destination_groups" {
   class_name = "syslogGroup"
   dn         = "uni/fabric/slgroup-${each.key}"
   content = {
-    # annotation          = each.value.annotation
     descr               = each.value.description
     format              = each.value.format
     includeMilliSeconds = each.value.show_milliseconds_in_timestamp == true ? "yes" : "no"
@@ -205,7 +199,6 @@ resource "aci_rest_managed" "syslog_remote_destinations" {
   class_name = "syslogRemoteDest"
   dn         = "uni/fabric/slgroup-${each.value.syslog_policy}/rdst-${each.value.host}"
   content = {
-    # annotation         = each.value.annotation
     adminState         = each.value.admin_state
     forwardingFacility = each.value.forwarding_facility
     host               = each.value.host
@@ -242,7 +235,6 @@ resource "aci_rest_managed" "syslog_sources" {
   class_name = "syslogSrc"
   dn         = "uni/fabric/moncommon/slsrc-${each.key}"
   content = {
-    # annotation = each.value.annotation
     incl = alltrue(
       [
         each.value.include_types.audit_logs,

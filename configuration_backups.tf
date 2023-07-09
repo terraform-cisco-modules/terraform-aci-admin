@@ -11,9 +11,8 @@ GUI Location:
  - Admin > Schedulers > Fabric > {scheduler_name}
 _______________________________________________________________________________________________________________________
 */
-resource "aci_trigger_scheduler" "schedulers" {
+resource "aci_trigger_scheduler" "map" {
   for_each    = local.configuration_backups
-  annotation  = each.value.annotation
   description = each.value.description
   name        = each.key
 }
@@ -30,12 +29,11 @@ GUI Location:
  - Admin > Schedulers > Fabric > {scheduler_name} > Recurring Window {scheduler_name}
 _______________________________________________________________________________________________________________________
 */
-resource "aci_recurring_window" "recurring_window" {
+resource "aci_recurring_window" "map" {
   depends_on = [
-    aci_trigger_scheduler.schedulers
+    aci_trigger_scheduler.map
   ]
   for_each   = local.configuration_backups
-  annotation = each.value.annotation
   concur_cap = each.value.maximum_concurrent_nodes == 0 ? "unlimited" : each.value.maximum_concurrent_nodes
   day        = each.value.schedule.days
   hour       = each.value.schedule.hour
@@ -46,7 +44,7 @@ resource "aci_recurring_window" "recurring_window" {
   ) > 0 && each.value.window_type == "one-time" ? each.value.delay_between_node_upgrades : 0
   proc_break   = each.value.processing_break
   proc_cap     = each.value.processing_size_capacity == 0 ? "unlimited" : each.value.processing_size_capacity
-  scheduler_dn = aci_trigger_scheduler.schedulers[each.key].id
+  scheduler_dn = aci_trigger_scheduler.map[each.key].id
   time_cap     = each.value.maximum_running_time == 0 ? "unlimited" : each.value.maximum_running_time
 }
 
@@ -60,9 +58,8 @@ GUI Location:
  - Admin > Import/Export > Remote Locations:{remote_host}
 _______________________________________________________________________________________________________________________
 */
-resource "aci_file_remote_path" "remote_locations" {
+resource "aci_file_remote_path" "map" {
   for_each    = local.remote_locations
-  annotation  = each.value.annotation
   auth_type   = each.value.authentication_type
   description = each.value.description
   host        = each.key
@@ -94,14 +91,13 @@ GUI Location:
  - Admin > Import/Export > Export Policies > Configuration > {export_name}
 _______________________________________________________________________________________________________________________
 */
-resource "aci_configuration_export_policy" "configuration_export" {
+resource "aci_configuration_export_policy" "map" {
   depends_on = [
-    aci_file_remote_path.remote_locations,
-    aci_trigger_scheduler.schedulers
+    aci_file_remote_path.map,
+    aci_trigger_scheduler.map
   ]
   for_each              = local.remote_locations
   admin_st              = each.value.start_now == true ? "triggered" : "untriggered"
-  annotation            = each.value.annotation
   description           = each.value.description
   format                = each.value.format # "json|xml"
   include_secure_fields = each.value.include_secure_fields == true ? "yes" : "no"
@@ -109,10 +105,10 @@ resource "aci_configuration_export_policy" "configuration_export" {
     regexall("^0$", tostring(each.value.max_snapshot_count))
   ) > 0 ? "global-limit" : each.value.max_snapshot_count
   name                                  = each.key
-  relation_config_rs_export_destination = aci_file_remote_path.remote_locations[each.key].id
-  relation_config_rs_export_scheduler   = aci_trigger_scheduler.schedulers[each.value.name].id
+  relation_config_rs_export_destination = aci_file_remote_path.map[each.key].id
+  relation_config_rs_export_scheduler   = aci_trigger_scheduler.map[each.value.name].id
   snapshot = length(
     regexall(true, each.value.snapshot)
   ) > 0 ? "yes" : "no"
-  target_dn = aci_file_remote_path.remote_locations[each.key].id
+  target_dn = aci_file_remote_path.map[each.key].id
 }

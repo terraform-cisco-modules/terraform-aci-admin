@@ -9,7 +9,6 @@ ________________________________________________________________________________
 */
 resource "aci_global_security" "security" {
   for_each                   = { for k, v in local.security : k => v if tostring(v.create) == "true" }
-  annotation                 = each.value.annotation != "" ? each.value.annotation : var.annotation
   block_duration             = lookup(each.value.lockout_user, "lockout_duration", local.sec.lockout_user.lockout_duration)
   change_count               = each.value.password_changes_within_interval
   change_during_interval     = each.value.password_change_interval_enforce
