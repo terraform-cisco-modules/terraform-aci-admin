@@ -71,9 +71,12 @@ resource "aci_rest_managed" "firmware_group" {
   class_name = "firmwareFwGrp"
   dn         = "uni/fabric/fwgrp-${each.key}"
   content = {
-    descr = each.value.description
-    name  = each.key
-    type  = "range"
+    #descr = each.value.description
+    name = each.key
+    type = "range"
+  }
+  lifecycle {
+    ignore_changes = [content.fwtype]
   }
 }
 
@@ -108,9 +111,9 @@ resource "aci_pod_maintenance_group" "map" {
   depends_on = [
     aci_rest_managed.maintenance_policy
   ]
+  #fwtype                     = "switch"
   for_each                   = local.firmware_update_groups
   description                = each.value.description
-  fwtype                     = "switch"
   name                       = each.key
   pod_maintenance_group_type = "range"
   relation_maint_rs_mgrpp    = aci_rest_managed.maintenance_policy[each.key].id
