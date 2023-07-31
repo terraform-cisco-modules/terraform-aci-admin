@@ -1,8 +1,10 @@
 locals {
+  aaa      = lookup(var.admin, "aaa", {})
   defaults = yamldecode(file("${path.module}/defaults.yaml")).defaults.admin
   config   = local.defaults.import_export.configuration_backups
   export   = lookup(var.admin, "import_export", {})
   ext_data = lookup(var.admin, "external_data_collectors", {})
+  security = lookup(local.aaa, "security", {})
 
   #__________________________________________________________
   #
@@ -138,13 +140,23 @@ locals {
   login_providers = concat(local.rproviders_list, local.tproviders_list)
   #__________________________________________________________
   #
-  # AAA => Security
+  # AAA => Security: Security Default Settings
   #__________________________________________________________
-  sec = local.defaults.aaa.security
-  security = length(lookup(var.admin, "aaa", {})) > 0 ? {
-    "default" : merge({ create = true }, local.sec, lookup(lookup(var.admin, "aaa", {}), "security", {})) } : {
-    "default" : merge({ create = false }, local.sec)
+  sec_defaults = local.defaults.aaa.security.security_default_settings
+  security_default_settings = {
+    for v in [lookup(local.security, "security_default_settings", {})] : "default" => merge(
+      local.sec_defaults, v,
+      { lockout_user = merge(local.sec_defaults.lockout_user, lookup(v, "lockout_user", {})) }
+    )
   }
+
+  #__________________________________________________________
+  #
+  # AAA => Security: Certificate Authorities and Key Rings
+  #__________________________________________________________
+  certkeyrings = local.defaults.aaa.security.certificate_authorities_and_key_rings
+  certificate_authorities_and_key_rings = {
+  for v in lookup(local.security, "certificate_authorities_and_key_rings", []) : v.name => merge(local.certkeyrings, v) }
 
   #__________________________________________________________
   #

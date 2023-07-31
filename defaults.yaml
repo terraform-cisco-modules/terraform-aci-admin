@@ -50,22 +50,30 @@ defaults:
             username: 'default'
           timeout: 5
       security:
-        annotation: ''
-        lockout_user:
-          enable_lockout: 'disable'
-          lockout_duration: 60
-          max_failed_attempts: 5
-          max_failed_attempts_window: 5
-        maximum_validity_period: 24
-        no_change_interval: 24
-        password_change_interval: 48
-        password_change_interval_enforce: 'enable'
-        password_changes_within_interval: 2
-        password_expiration_warn_time: 15
-        password_strength_check: true
-        user_passwords_to_store_count: 5
-        web_session_idle_timeout: 1200
-        web_token_timeout: 600
+        certificate_authorities_and_key_rings:
+          activate_certificate: false
+          description: ''
+          modulus: 2048
+          name: '**REQUIRED**'
+          trustpoint: '**REQUIRED**'
+          trustpoint_description: ''
+          var_identity: 0
+        security_default_settings:
+          lockout_user:
+            enable_lockout: 'disable'
+            lockout_duration: 60
+            max_failed_attempts: 5
+            max_failed_attempts_window: 5
+          maximum_validity_period: 24
+          no_change_interval: 24
+          password_change_interval: 48
+          password_change_interval_enforce: 'enable'
+          password_changes_within_interval: 2
+          password_expiration_warn_time: 15
+          password_strength_check: true
+          user_passwords_to_store_count: 5
+          web_session_idle_timeout: 1200
+          web_token_timeout: 600
     external_data_collectors:
       smart_callhome:
         admin_state: enabled
