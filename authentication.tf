@@ -22,7 +22,7 @@ API Information:
  - Class: "aaaConsoleAuth"
  - Distinguished Named: "uni/userext/authrealm/consoleauth"
 GUI Location:
- - Admin > AAA > Authentication
+ - Admin > AAA > Authentication: Authentication Default Settings: Console Authentication
 _______________________________________________________________________________________________________________________
 */
 resource "aci_console_authentication" "map" {
@@ -38,7 +38,7 @@ API Information:
  - Class: "aaaDefaultAuth"
  - Distinguished Named: "uni/userext/authrealm/defaultauth"
 GUI Location:
- - Admin > AAA > Authentication
+ - Admin > AAA > Authentication: Authentication Default Settings: Default Authentication
 _______________________________________________________________________________________________________________________
 */
 resource "aci_default_authentication" "map" {
