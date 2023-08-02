@@ -1,7 +1,6 @@
 locals {
   aaa      = lookup(var.admin, "aaa", {})
   defaults = yamldecode(file("${path.module}/defaults.yaml")).defaults.admin
-  config   = local.defaults.import_export.configuration_backups
   export   = lookup(var.admin, "import_export", {})
   ext_data = lookup(var.admin, "external_data_collectors", {})
   security = lookup(local.aaa, "security", {})
@@ -297,29 +296,9 @@ locals {
   #
   # Firmware => Switches => Firmware Update Groups
   #__________________________________________________________
-  fw_sw = lookup(lookup(var.admin, "firmware", {}), "switches", {})
-  fwug  = local.defaults.firmware.switches.firmware_update_groups
-  firmware_update_groups = {
-    for v in lookup(local.fw_sw, "firmware_update_groups", []) : v.name => {
-      administrative_state        = lookup(v, "administrative_state ", local.fwug.administrative_state)
-      description                 = lookup(v, "description", local.fwug.description)
-      download_state              = lookup(v, "download_state", local.fwug.download_state)
-      effective_on_reboot         = lookup(v, "effective_on_reboot ", local.fwug.effective_on_reboot)
-      graceful_maintenance        = lookup(v, "graceful_maintenance ", local.fwug.graceful_maintenance)
-      ignore_compatibility        = lookup(v, "ignore_compatibility ", local.fwug.ignore_compatibility)
-      name                        = v.name
-      nodes                       = v.nodes
-      notification_condition      = lookup(v, "notification_condition ", local.fwug.notification_condition)
-      scheduler_run_mode          = lookup(v, "scheduler_run_mode", local.fwug.scheduler_run_mode)
-      silent_role_package_upgrade = lookup(v, "silent_role_package_upgrade", local.fwug.silent_role_package_upgrade)
-      silent_role_package_version = lookup(v, "silent_role_package_version", local.fwug.silent_role_package_version)
-      smu_operation_flags         = lookup(v, "smu_operation_flags  ", local.fwug.smu_operation_flags)
-      smu_operation_type          = lookup(v, "smu_operation_type", local.fwug.smu_operation_type)
-      target_simulator            = lookup(v, "target_simulator", local.fwug.target_simulator)
-      target_version              = v.target_version
-      version_check_override      = lookup(v, "version_check_override", local.fwug.version_check_override)
-    }
-  }
+  fw_sw                  = lookup(lookup(var.admin, "firmware", {}), "switches", {})
+  fwug                   = local.defaults.firmware.switches.firmware_update_groups
+  firmware_update_groups = { for v in lookup(local.fw_sw, "firmware_update_groups", []) : v.name => merge(local.fwug, v) }
   firmware_update_nodes = { for i in flatten([
     for k, v in local.firmware_update_groups : [
       for e in v.nodes : {
@@ -334,70 +313,46 @@ locals {
   #
   # Import/Export => Configuration Backups
   #__________________________________________________________
-  configuration_backups = {
-    for v in lookup(local.export, "configuration_backups", []) : v.name => {
-      authentication_type = length(compact([var.ssh_key_contents, var.ssh_key_contents])
-      ) > 0 ? "useSshKeyContents" : "usePassword"
-      description = lookup(v, "description", local.config.description)
-      format      = lookup(v, "format", local.config.format)
-      include_secure_fields = lookup(
-        v, "include_secure_fields", local.config.include_secure_fields
-      )
-      management_epg = lookup(v, "management_epg", local.config.management_epg)
-      mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
-        lookup(v, "management_epg", local.config.management_epg))
-      ].type
-      max_snapshot_count = lookup(v, "max_snapshot_count", local.config.max_snapshot_count)
-      protocol           = lookup(v, "protocol", local.config.protocol)
-      name               = v.name
-      remote_hosts       = lookup(v, "remote_hosts", local.config.remote_hosts)
-      remote_path        = lookup(v, "remote_path", local.config.remote_path)
-      remote_port        = lookup(v, "remote_port", local.config.remote_port)
-      snapshot           = lookup(v, "snapshot", local.config.snapshot)
-      start_now          = lookup(v, "start_now", local.config.start_now)
-      username           = lookup(v, "username", local.config.username)
-      # Trigger Scheduler and Recurring Window
-      delay_between_node_upgrades = lookup(
-        v, "delay_between_node_upgrades", local.config.delay_between_node_upgrades
-      )
-      maximum_concurrent_nodes = lookup(
-        v, "maximum_concurrent_nodes", local.config.maximum_concurrent_nodes
-      )
-      maximum_running_time = lookup(v, "maximum_running_time", local.config.maximum_running_time)
-      name                 = v.name
-      processing_break     = lookup(v, "processing_break", local.config.processing_break)
-      processing_size_capacity = lookup(
-        v, "processing_size_capacity", local.config.processing_size_capacity
-      )
-      schedule = {
-        days   = lookup(lookup(v, "schedule", {}), "days", local.config.schedule.days)
-        hour   = lookup(lookup(v, "schedule", {}), "hour", local.config.schedule.hour)
-        minute = lookup(lookup(v, "schedule", {}), "minute", local.config.schedule.minute)
-      }
-      window_type = lookup(v, "window_type", local.config.window_type)
+  config    = local.defaults.import_export.configuration_backups
+  scheduler = local.defaults.import_export.schedulers
+  remote_locations = { for i in flatten([
+    for v in lookup(local.export, "configuration_backups", []) : [
+      for e in lookup(v, "remote_locations") : merge(local.config, v, {
+        export_policy = merge(local.config.export_policy, lookup(v, "export_policy", {}))
+        description   = lookup(e, "description", "")
+        host          = e.host
+        mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
+          lookup(v, "management_epg", local.config.management_epg))
+        ].type
+      })
+    ]
+  ]) : i.host => i }
+
+  export_policies = { for i in flatten([
+    for k, v in local.remote_locations : [
+      for e in [v.export_policy] : merge(e, {
+        description    = v.description
+        host           = v.host
+        scheduler_name = v.scheduler_name
+      })
+    ]
+  ]) : i.host => i }
+
+  schedulers = {
+    for v in lookup(local.export, "schedulers", []) : v.name => {
+      description = lookup(v, "description", "")
+      name        = v.name
+      windows     = lookup(v, "windows", [])
     }
   }
-  remote_locations = { for i in flatten([
-    for v in local.configuration_backups : [
-      for s in v.remote_hosts : {
-        authentication_type   = v.authentication_type
-        description           = v.description
-        format                = v.format
-        include_secure_fields = v.include_secure_fields
-        management_epg        = v.management_epg
-        mgmt_epg_type         = v.mgmt_epg_type
-        max_snapshot_count    = v.max_snapshot_count
-        protocol              = v.protocol
-        name                  = v.name
-        remote_host           = s
-        remote_path           = v.remote_path
-        remote_port           = v.remote_port
-        snapshot              = v.snapshot
-        start_now             = v.start_now
-        username              = v.username
-      }
-    ]
-  ]) : i.remote_host => i }
 
+  scheduler_windows = flatten([
+    for k, v in local.schedulers : [
+      for e in v.windows : merge(local.scheduler.windows, e, {
+        scheduler = k
+        schedule  = merge(local.scheduler.windows.schedule, lookup(e, "schedule", {}))
+      })
+    ]
+  ])
 
 }

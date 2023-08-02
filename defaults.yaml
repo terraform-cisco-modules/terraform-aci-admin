@@ -147,30 +147,37 @@ defaults:
           version_check_override: untriggered
     import_export:
       configuration_backups:
-        annotation: ''
-        description: ''
-        # Import/Export > Export Policies > Configuration
-        format: json
-        include_secure_fields: false
-        max_snapshot_count: 0
-        snapshot: false
-        start_now: false
         # Import/Export > Remote Locations
         authentication_type: usePassword
+        # Import/Export > Export Policies > Configuration
+        export_policy:
+          format: json
+          include_secure_fields: false
+          max_snapshot_count: 0
+          snapshot: false
+          start_now: false
         management_epg: default
         protocol: sftp
-        remote_hosts: []
+        remote_locations:
+          description: ''
+          host: 198.18.1.22
         remote_path: /tmp
         remote_port: 22
-        username: admin
-        # Schedulers > Fabric: One-Time/Recuring Windows
-        delay_between_node_upgrades: 0 # Only applicable if the maximum concurrent node count is 1.
-        maximum_concurrent_nodes: 0
-        maximum_running_time: 0
-        processing_break: none
-        processing_size_capacity: 0
-        schedule:
-          days: every-day
-          hour: 23
-          minute: 45
-        window_type: recurring
+        remote_username: admin
+        scheduler_name: '**REQUIRED**'
+      schedulers:
+        description: ''
+        name: '**REQUIRED**'
+        windows:
+          delay_between_node_upgrades: 0 # Only applicable if the maximum concurrent node count is 1.
+          maximum_concurrent_nodes: 0
+          maximum_running_time: 0
+          processing_break: none
+          processing_size_capacity: 0
+          schedule:
+            date: 2029-01-01
+            days: every-day
+            hour: 23
+            minute: 45
+            offset: -00:00
+          window_type: recurring

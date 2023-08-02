@@ -2,7 +2,7 @@
 
 API Information:
  - Class: "aaaRadiusProvider"
- - Distinguished Name: "uni/userext/radiusext/radiusprovider-{{host}}"
+ - Distinguished Name: "uni/userext/radiusext/radiusprovider-{host}"
 GUI Location:
  - Admin > AAA > Authentication:RADIUS > Create RADIUS Provider
 _______________________________________________________________________________________________________________________
@@ -46,7 +46,7 @@ resource "aci_rsa_provider" "rsa_providers" {
 
 API Information:
  - Class: "aaaProviderRef"
- - Distinguished Name: "uni/userext/radiusext/radiusprovidergroup-{{login_domain}}/providerref-{{host}}"
+ - Distinguished Name: "uni/userext/radiusext/radiusprovidergroup-{login_domain}/providerref-{host}"
 GUI Location:
  - Admin > AAA > Authentication:AAA > Login Domain
 _______________________________________________________________________________________________________________________

@@ -5,6 +5,7 @@ API Information:
  - Distinguished Name: "uni/fabric/tacacsgroup-{accounting_destination_group}"
 GUI Location:
  - Admin > External Data Collectors > Monitoring Destinations > TACACS > {accounting_destination_group}
+_______________________________________________________________________________________________________________________
 */
 resource "aci_tacacs_accounting" "tacacs_accounting" {
   for_each    = { for k, v in local.tacacs : k => v }
@@ -19,6 +20,7 @@ API Information:
  - Distinguished Name: "uni/fabric/tacacsgroup-{accounting_destination_group}/tacacsdest-{host}-port-{port}"
 GUI Location:
  - Admin > External Data Collectors > Monitoring Destinations > TACACS > {accounting_destination_group} > [TACACS Destinations]
+_______________________________________________________________________________________________________________________
 */
 resource "aci_tacacs_accounting_destination" "tacacs_accounting_destinations" {
   depends_on = [
