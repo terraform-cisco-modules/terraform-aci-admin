@@ -33,7 +33,7 @@ resource "aci_recurring_window" "map" {
   depends_on = [
     aci_trigger_scheduler.map
   ]
-  for_each          = {
+  for_each = {
     for v in local.scheduler_windows : "${v.scheduler}:${v.schedule.days}" => v if v.window_type == "recurring"
   }
   concur_cap        = each.value.maximum_concurrent_nodes == 0 ? "unlimited" : each.value.maximum_concurrent_nodes
@@ -128,9 +128,9 @@ resource "aci_configuration_export_policy" "map" {
   include_secure_fields = each.value.include_secure_fields == true ? "yes" : "no"
   max_snapshot_count = length(regexall("^0$", tostring(each.value.max_snapshot_count))
   ) > 0 ? "global-limit" : each.value.max_snapshot_count
-  name = each.key
-  relation_config_rs_remote_path = aci_file_remote_path.map[each.key].id
-  relation_config_rs_export_scheduler   = aci_trigger_scheduler.map[each.value.scheduler_name].id
+  name                                = each.key
+  relation_config_rs_remote_path      = aci_file_remote_path.map[each.key].id
+  relation_config_rs_export_scheduler = aci_trigger_scheduler.map[each.value.scheduler_name].id
   #
   snapshot  = length(regexall(true, each.value.snapshot)) > 0 ? "yes" : "no"
   target_dn = aci_file_remote_path.map[each.key].id
