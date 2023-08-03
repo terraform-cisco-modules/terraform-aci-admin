@@ -2,7 +2,7 @@
 
 API Information:
  - Class: "callhomeSmartGroup"
- - Distinguished Name: "uni/fabric/smartgroup-{DestGrp_Name}"
+ - Distinguished Name: "uni/fabric/smartgroup-{name}"
 GUI Location:
  - Admin > External Data Collectors > Monitoring Destinations > Smart Callhome > [Smart CallHome Dest Group]
 _______________________________________________________________________________________________________________________
@@ -17,6 +17,15 @@ resource "aci_rest_managed" "smart_callhome_destination_groups" {
   }
 }
 
+/*_____________________________________________________________________________________________________________________
+
+API Information:
+ - Class: "callhomeProf"
+ - Distinguished Name: "uni/fabric/smartgroup-{name}/prof"
+GUI Location:
+ - Admin > External Data Collectors > Monitoring Destinations > Smart Callhome > [Smart CallHome Dest Group]
+_______________________________________________________________________________________________________________________
+*/
 resource "aci_rest_managed" "smart_callhome_destination_group_properties" {
   for_each   = local.smart_callhome
   class_name = "callhomeProf"
@@ -39,6 +48,15 @@ resource "aci_rest_managed" "smart_callhome_destination_group_properties" {
   }
 }
 
+/*_____________________________________________________________________________________________________________________
+
+API Information:
+ - Class: "callhomeSmtpServer"
+ - Distinguished Name: "uni/fabric/smartgroup-{name}/prof/smtp"
+GUI Location:
+ - Admin > External Data Collectors > Monitoring Destinations > Smart Callhome > [Smart CallHome Dest Group]
+_______________________________________________________________________________________________________________________
+*/
 resource "aci_rest_managed" "smart_callhome_smtp_server" {
   depends_on = [
     aci_rest_managed.smart_callhome_destination_groups
@@ -63,7 +81,7 @@ resource "aci_rest_managed" "smart_callhome_smtp_server" {
 
 API Information:
  - Class: "callhomeSmartDest"
- - Distinguished Name: "uni/fabric/smartgroup-{destionation_group}"
+ - Distinguished Name: "uni/fabric/smartgroup-{name}/smartdest-{destionation_group}"
 GUI Location:
  - Admin > External Data Collectors > Monitoring Destinations > Smart Callhome > {destionation_group}
 _______________________________________________________________________________________________________________________
@@ -137,9 +155,9 @@ resource "aci_rest_managed" "smart_callhome_source" {
 
 API Information:
  - Class: "syslogGroup"
- - Distinguished Name: "uni/fabric/slgroup-{Dest_Grp_Name}"
+ - Distinguished Name: "uni/fabric/slgroup-{name}"
 GUI Location:
- - Admin > External Data Collectors > Monitoring Destinations > Syslog > {Dest_Grp_Name}
+ - Admin > External Data Collectors > Monitoring Destinations > Syslog > {name}
 _______________________________________________________________________________________________________________________
 */
 resource "aci_rest_managed" "syslog_destination_groups" {
@@ -185,10 +203,9 @@ resource "aci_rest_managed" "syslog_destination_groups" {
 
 API Information:
  - Class: "syslogRemoteDest"
- - Distinguished Name: " uni/fabric/slgroup-default/rdst-{syslog_server}"
+ - Distinguished Name: " uni/fabric/slgroup-default/rdst-{destination_group}"
 GUI Location:
- - Admin > External Data Collectors > Monitoring Destinations > Syslog > {Destination Group} > 
-   Create Syslog Remote Destination
+ - Admin > External Data Collectors > Monitoring Destinations > Syslog > {destination_group}
 _______________________________________________________________________________________________________________________
 */
 resource "aci_rest_managed" "syslog_remote_destinations" {

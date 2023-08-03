@@ -26,7 +26,7 @@ resource "aci_rest_managed" "certificate_authorities" {
 /*_____________________________________________________________________________________________________________________
 
 API Information:
- - Class: "pkiTP"
+ - Class: "pkiKeyRing"
  - Distinguished Name: "uni/userext/pkiext/keyring-{{name}}"
 GUI Location:
  - Admin > AAA > Security: Key Rings
@@ -77,9 +77,11 @@ resource "aci_rest_managed" "key_ring_operational" {
 
 API Information:
  - Classes: "aaaPwdProfile", "aaaUserEp", "pkiWebTokenData"
+ - Distinguished Name: "uni/userext/pwdprofile"
  - Distinguished Name: "uni/userext"
+ - Distinguished Name: "uni/userext/pkiext/webtokendata"
 GUI Location:
- - Admin > AAA > Security
+ - Admin > AAA > Security: Security Default Settings
 _______________________________________________________________________________________________________________________
 */
 resource "aci_global_security" "security" {

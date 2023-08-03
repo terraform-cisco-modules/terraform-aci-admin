@@ -59,8 +59,8 @@ resource "aci_rest_managed" "maintenance_policy" {
 /*_____________________________________________________________________________________________________________________
 
 API Information:
- - Class: "firmwareFwP"
- - Distinguished Name: "uni/fabric/fwpol-{name}"
+ - Class: "firmwareFwGrp"
+ - Distinguished Name: "uni/fabric/fwgrp-{name}"
 GUI Location:
  - Admin > Firmware > Switches > {maintenance_group_name}
 _______________________________________________________________________________________________________________________
@@ -80,6 +80,15 @@ resource "aci_rest_managed" "firmware_group" {
   }
 }
 
+/*_____________________________________________________________________________________________________________________
+
+API Information:
+ - Class: "firmwareFwP"
+ - Distinguished Name: "uni/fabric/fwpol-{name}"
+GUI Location:
+ - Admin > Firmware > Switches > {maintenance_group_name}
+_______________________________________________________________________________________________________________________
+*/
 resource "aci_rest_managed" "firmware_policy" {
   depends_on = [aci_rest_managed.firmware_group]
   for_each   = local.firmware_update_groups
@@ -140,6 +149,15 @@ resource "aci_maintenance_group_node" "map" {
   to_                      = each.value.node_id
 }
 
+/*_____________________________________________________________________________________________________________________
+
+API Information:
+ - Class: "fabricNodeBlk"
+ - Distinguished Name: "uni/fabric/fwgrp-{name}/nodeblk-blk{node_id}-{node_id}"
+GUI Location:
+ - Admin > Firmware > Switches > {maintenance_group_name}:Nodes
+_______________________________________________________________________________________________________________________
+*/
 resource "aci_rest_managed" "firmware_group_nodes" {
   depends_on = [aci_rest_managed.firmware_policy]
   for_each   = local.firmware_update_nodes
