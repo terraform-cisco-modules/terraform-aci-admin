@@ -12,10 +12,10 @@ resource "aci_radius_provider" "radius_providers" {
   auth_port      = each.value.port
   auth_protocol  = each.value.authorization_protocol
   description    = "${each.value.host} Provider."
-  key            = var.radius_key
+  key            = var.admin_sensitive.radius.key[each.value.key]
   monitor_server = each.value.server_monitoring.admin_state == true ? "enabled" : "disabled"
   monitoring_password = length(regexall(true, each.value.server_monitoring.admin_state)
-  ) > 0 ? var.radius_monitoring_password : ""
+  ) > 0 ? var.admin_sensitive.radius.password[each.value.password] : ""
   monitoring_user = each.value.server_monitoring.username
   name            = each.value.host
   retries         = each.value.retries
@@ -30,10 +30,10 @@ resource "aci_rsa_provider" "rsa_providers" {
   auth_port      = each.value.port
   auth_protocol  = each.value.authorization_protocol
   description    = "${each.value.host} Provider."
-  key            = var.radius_key
+  key            = var.admin_sensitive.radius.key[each.value.key]
   monitor_server = each.value.server_monitoring.admin_state == true ? "enabled" : "disabled"
   monitoring_password = length(regexall(true, each.value.server_monitoring.admin_state)
-  ) > 0 ? var.radius_monitoring_password : ""
+  ) > 0 ? var.admin_sensitive.radius.password[each.value.password] : ""
   monitoring_user = each.value.server_monitoring.username
   name            = each.value.host
   retries         = each.value.retries

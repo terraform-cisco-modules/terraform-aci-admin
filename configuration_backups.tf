@@ -89,17 +89,17 @@ resource "aci_file_remote_path" "map" {
   description = each.value.description
   host        = each.key
   identity_private_key_contents = length(regexall("useSshKeyContents", each.value.authentication_type)
-  ) > 0 ? var.ssh_key_contents : ""
+  ) > 0 ? var.admin_sensitive.configuration_backup.private_key[each.value.private_key] : ""
   identity_private_key_passphrase = length(regexall("useSshKeyContents", each.value.authentication_type)
-  ) > 0 ? var.ssh_key_passphrase : ""
+  ) > 0 ? var.admin_sensitive.configuration_backup.private_key_passphrase[each.value.private_key_passphrase] : ""
   name        = each.key
   protocol    = each.value.protocol
-  remote_path = each.value.remote_path
-  remote_port = each.value.remote_port
+  remote_path = each.value.path
+  remote_port = each.value.port
   user_name = length(regexall("usePassword", each.value.authentication_type)
-  ) > 0 ? each.value.remote_username : ""
+  ) > 0 ? each.value.username : ""
   user_passwd = length(regexall("usePassword", each.value.authentication_type)
-  ) > 0 ? var.remote_password : ""
+  ) > 0 ? var.admin_sensitive.configuration_backup.password[each.value.password] : ""
   relation_file_rs_a_remote_host_to_epg = "uni/tn-mgmt/mgmtp-default/${each.value.mgmt_epg_type}-${each.value.management_epg}"
 }
 

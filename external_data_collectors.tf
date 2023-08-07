@@ -42,7 +42,8 @@ resource "aci_rest_managed" "smart_callhome_destination_group_properties" {
     replyTo    = each.value.reply_to_email
     phone      = each.value.phone_contact
     port       = each.value.smtp_server.port_number
-    pwd        = each.value.smtp_server.secure_smtp == true ? var.smtp_password : ""
+    pwd = length(regexall(true, each.value.smtp_server.secure_smtp)
+    ) > 0 ? var.admin_sensitive.smart_callhome.password[each.value.smpt_server.password] : ""
     secureSmtp = each.value.smtp_server.secure_smtp == true ? "yes" : "no"
     site       = each.value.site_id
     username   = each.value.smtp_server.username

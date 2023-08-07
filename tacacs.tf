@@ -29,7 +29,7 @@ resource "aci_tacacs_accounting_destination" "tacacs_accounting_destinations" {
   for_each             = local.tacacs_providers
   description          = "${each.key} Accounting Destination."
   host                 = each.key
-  key                  = var.tacacs_key
+  key                  = var.admin_sensitive.radius.key[each.value.key]
   name                 = each.key
   port                 = each.value.port
   tacacs_accounting_dn = aci_tacacs_accounting.tacacs_accounting[each.value.login_domain].id
@@ -50,10 +50,10 @@ resource "aci_tacacs_provider" "tacacs_providers" {
   for_each       = local.tacacs_providers
   auth_protocol  = each.value.authorization_protocol
   description    = "${each.key} TACACS+ Provider."
-  key            = var.tacacs_key
+  key            = var.admin_sensitive.tacacs.key[each.value.key]
   monitor_server = each.value.server_monitoring.admin_state == true ? "enabled" : "disabled"
   monitoring_password = length(regexall(true, each.value.server_monitoring.admin_state)
-  ) > 0 ? var.tacacs_monitoring_password : ""
+  ) > 0 ? var.admin_sensitive.tacacs.password[each.value.password] : ""
   monitoring_user = each.value.server_monitoring.username
   name            = each.value.host
   port            = each.value.port

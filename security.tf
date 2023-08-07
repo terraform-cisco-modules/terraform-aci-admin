@@ -14,12 +14,9 @@ resource "aci_rest_managed" "certificate_authorities" {
   class_name = "pkiTP"
   dn         = "uni/userext/pkiext/tp-${each.key}"
   content = {
-    certChain = length(regexall("1", each.value.var_identity)
-      ) > 0 ? "${var.apic_ca_certificate_chain_1}" : length(
-      regexall("2", each.value.var_identity)
-    ) > 0 ? "${var.apic_ca_certificate_chain_2}" : ""
-    descr = each.value.trustpoint_description
-    name  = each.key
+    certChain = var.admin_sensitive.security.ca_certificate[each.value.var_identity]
+    descr     = each.value.trustpoint_description
+    name      = each.key
   }
 }
 
@@ -38,19 +35,13 @@ resource "aci_rest_managed" "key_rings" {
   dn         = "uni/userext/pkiext/keyring-${each.key}"
   content = {
     adminState = "completed"
-    cert = length(regexall("1", each.value.var_identity)
-      ) > 0 ? "${var.apic_certificate_1}" : length(
-      regexall("2", each.value.var_identity)
-    ) > 0 ? "${var.apic_certificate_2}" : ""
-    descr = each.value.description
-    key = length(regexall("1", each.value.var_identity)
-      ) > 0 ? "${var.apic_private_key_1}" : length(
-      regexall("2", each.value.var_identity)
-    ) > 0 ? "${var.apic_private_key_2}" : ""
-    modulus = "mod${each.value.modulus}"
-    name    = each.value.name
-    regen   = "no"
-    tp      = each.value.trustpoint
+    cert       = var.admin_sensitive.security.certificate[each.value.var_identity]
+    descr      = each.value.description
+    key        = var.admin_sensitive.security.private_key[each.value.var_identity]
+    modulus    = "mod${each.value.modulus}"
+    name       = each.value.name
+    regen      = "no"
+    tp         = each.value.trustpoint
   }
 }
 

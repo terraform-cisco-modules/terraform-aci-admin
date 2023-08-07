@@ -10,7 +10,7 @@ A Terraform module to configure ACI Admin Policies.
 
 ### A comprehensive example using this module is available below:
 
-## [Easy ACI](https://github.com/terraform-cisco-modules/easy-aci-complete)
+## [Easy ACI](https://github.com/terraform-cisco-modules/easy-aci)
 
 ## Requirements
 
@@ -28,22 +28,7 @@ A Terraform module to configure ACI Admin Policies.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_admin"></a> [admin](#input\_admin) | Model data. | `any` | n/a | yes |
-| <a name="input_annotations"></a> [annotations](#input\_annotations) | The Version of this Script. | <pre>list(object(<br>    {<br>      key   = string<br>      value = string<br>    }<br>  ))</pre> | <pre>[<br>  {<br>    "key": "orchestrator",<br>    "value": "terraform:easy-aci:v2.0"<br>  }<br>]</pre> | no |
-| <a name="input_management_epgs"></a> [management\_epgs](#input\_management\_epgs) | The Management EPG's that will be used by the script.<br>- name: Name of the EPG<br>- type: Type of EPG<br>  * inb<br>  * oob | <pre>list(object(<br>    {<br>      name = string<br>      type = string<br>    }<br>  ))</pre> | <pre>[<br>  {<br>    "name": "default",<br>    "type": "oob"<br>  }<br>]</pre> | no |
-| <a name="input_radius_key"></a> [radius\_key](#input\_radius\_key) | RADIUS Key. | `string` | `""` | no |
-| <a name="input_radius_monitoring_password"></a> [radius\_monitoring\_password](#input\_radius\_monitoring\_password) | RADIUS Monitoring Password. | `string` | `""` | no |
-| <a name="input_tacacs_key"></a> [tacacs\_key](#input\_tacacs\_key) | TACACS Key. | `string` | `""` | no |
-| <a name="input_tacacs_monitoring_password"></a> [tacacs\_monitoring\_password](#input\_tacacs\_monitoring\_password) | TACACS Monitoring Password. | `string` | `""` | no |
-| <a name="input_apic_ca_certificate_chain_1"></a> [apic\_ca\_certificate\_chain\_1](#input\_apic\_ca\_certificate\_chain\_1) | Certificate Authority Certificate Chain.  i.e. Intermediate and Root CA Certificate. | `string` | `""` | no |
-| <a name="input_apic_ca_certificate_chain_2"></a> [apic\_ca\_certificate\_chain\_2](#input\_apic\_ca\_certificate\_chain\_2) | Certificate Authority Certificate Chain.  i.e. Intermediate and Root CA Certificate. | `string` | `""` | no |
-| <a name="input_apic_certificate_1"></a> [apic\_certificate\_1](#input\_apic\_certificate\_1) | APIC Certificate 1. | `string` | `""` | no |
-| <a name="input_apic_certificate_2"></a> [apic\_certificate\_2](#input\_apic\_certificate\_2) | APIC Certificate 2. | `string` | `""` | no |
-| <a name="input_apic_private_key_1"></a> [apic\_private\_key\_1](#input\_apic\_private\_key\_1) | APIC Certificate Private Key 1. | `string` | `""` | no |
-| <a name="input_apic_private_key_2"></a> [apic\_private\_key\_2](#input\_apic\_private\_key\_2) | APIC Certificate Private Key 2. | `string` | `""` | no |
-| <a name="input_smtp_password"></a> [smtp\_password](#input\_smtp\_password) | Password to use if Secure SMTP is enabled for the Smart CallHome Destination Group Mail Server. | `string` | `""` | no |
-| <a name="input_remote_password"></a> [remote\_password](#input\_remote\_password) | Remote Host Password. | `string` | `""` | no |
-| <a name="input_ssh_key_contents"></a> [ssh\_key\_contents](#input\_ssh\_key\_contents) | SSH Private Key Based Authentication Contents. | `string` | `""` | no |
-| <a name="input_ssh_key_passphrase"></a> [ssh\_key\_passphrase](#input\_ssh\_key\_passphrase) | SSH Private Key Based Authentication Passphrase. | `string` | `""` | no |
+| <a name="input_admin_sensitive"></a> [admin\_sensitive](#input\_admin\_sensitive) | Note: Sensitive Variables cannot be added to a for\_each loop so these are added seperately.<br>    * mcp\_instance\_policy\_default: MisCabling Protocol Instance Settings.<br>      - key: The key or password used to uniquely identify this configuration object.<br>    * virtual\_networking: ACI to Virtual Infrastructure Integration.<br>      - password: Username/Password combination to Authenticate to the Virtual Infrastructure. | <pre>object({<br>    configuration_backup = object({<br>      password               = map(string)<br>      private_key            = map(string)<br>      private_key_passphrase = map(string)<br>    })<br>    radius = object({<br>      key      = map(string)<br>      password = map(string)<br>    })<br>    security = object({<br>      ca_certificate = map(string)<br>      certificate    = map(string)<br>      private_key    = map(string)<br>    })<br>    tacacs = object({<br>      key      = map(string)<br>      password = map(string)<br>    })<br>  })</pre> | <pre>{<br>  "configuration_backup": {<br>    "password": {},<br>    "private_key": {},<br>    "private_key_passphrase": {}<br>  },<br>  "radius": {<br>    "key": {},<br>    "password": {}<br>  },<br>  "security": {<br>    "ca_certificate": {},<br>    "certificate": {},<br>    "private_key": {}<br>  },<br>  "smart_callhome": {<br>    "password": {}<br>  },<br>  "tacacs": {<br>    "key": {},<br>    "password": {}<br>  }<br>}</pre> | no |
 ## Outputs
 
 | Name | Description |

@@ -1,9 +1,10 @@
 locals {
-  aaa      = lookup(var.admin, "aaa", {})
-  defaults = yamldecode(file("${path.module}/defaults.yaml")).defaults.admin
-  export   = lookup(var.admin, "import_export", {})
-  ext_data = lookup(var.admin, "external_data_collectors", {})
-  security = lookup(local.aaa, "security", {})
+  aaa       = lookup(var.admin, "aaa", {})
+  defaults  = yamldecode(file("${path.module}/defaults.yaml")).defaults.admin
+  export    = lookup(var.admin, "import_export", {})
+  ext_data  = lookup(var.admin, "external_data_collectors", {})
+  mgmt_epgs = var.admin.management_epgs
+  security  = lookup(local.aaa, "security", {})
 
   #__________________________________________________________
   #
@@ -33,44 +34,21 @@ locals {
   #
   # AAA => Authentication => Providers: RADIUS
   #__________________________________________________________
-  RADIUS  = local.defaults.aaa.authentication.radius
-  radius1 = lookup(local.auth, "radius", {})
+  RADIUS = local.defaults.aaa.authentication.radius
   radius = {
-    for v in lookup(local.auth, "radius", []) : v.login_domain => {
-      authorization_protocol = lookup(v, "authorization_protocol", local.RADIUS.authorization_protocol)
-      hosts                  = v.hosts
-      management_epg         = lookup(v, "management_epg", local.RADIUS.management_epg)
-      mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
+    for v in lookup(local.auth, "radius", []) : v.login_domain => merge(local.RADIUS, v, {
+      mgmt_epg_type = local.mgmt_epgs[index(local.mgmt_epgs[*].name,
         lookup(v, "management_epg", local.RADIUS.management_epg))
       ].type
-      login_domain = v.login_domain
-      port         = lookup(v, "port", local.RADIUS.port)
-      retries      = lookup(v, "retries", local.RADIUS.retries)
-      server_monitoring = {
-        admin_state = lookup(lookup(v, "server_monitoring", {}
-        ), "admin_state", local.RADIUS.server_monitoring.admin_state)
-        username = lookup(lookup(v, "server_monitoring", {}
-        ), "username", local.RADIUS.server_monitoring.username)
-      }
-      timeout = lookup(v, "timeout", local.RADIUS.timeout)
-      type    = lookup(v, "type", local.RADIUS.type)
-    }
+      server_monitoring = merge(local.TACACS.server_monitoring, lookup(v, "server_monitoring", {}))
+    })
   }
   radius_providers = { for i in flatten([
     for v in local.radius : [
-      for s in range(length(v.hosts)) : {
-        authorization_protocol = v.authorization_protocol
-        host                   = element(v.hosts, s)
-        management_epg         = v.management_epg
-        mgmt_epg_type          = v.mgmt_epg_type
-        login_domain           = v.login_domain
-        order                  = s
-        port                   = v.port
-        retries                = v.retries
-        server_monitoring      = v.server_monitoring
-        timeout                = v.timeout
-        type                   = v.type
-      }
+      for s in range(length(v.hosts)) : merge(v, {
+        host  = element(v.hosts, s)
+        order = s
+      })
     ]
   ]) : i.host => i }
   radius_list     = [for k, v in local.radius : v]
@@ -82,54 +60,23 @@ locals {
   # AAA => Authentication => Providers: TACACS+
   #__________________________________________________________
 
-  TACACS   = local.defaults.aaa.authentication.tacacs
-  tac_plus = lookup(local.auth, "tacacs", {})
+  TACACS = local.defaults.aaa.authentication.tacacs
   tacacs = {
-    for v in lookup(local.auth, "tacacs", []) : v.login_domain => {
-      accounting_include = {
-        audit_logs = lookup(lookup(v, "accounting_include", {}
-        ), "audit_logs", local.TACACS.accounting_include.audit_logs)
-        events = lookup(lookup(v, "accounting_include", {}
-        ), "events", local.TACACS.accounting_include.events)
-        faults = lookup(lookup(v, "accounting_include", {}
-        ), "faults", local.TACACS.accounting_include.faults)
-        session_logs = lookup(lookup(v, "accounting_include", {}
-        ), "session_logs", local.TACACS.accounting_include.session_logs)
-      }
-      authorization_protocol = lookup(v, "authorization_protocol", local.TACACS.authorization_protocol)
-      hosts                  = lookup(v, "hosts", local.TACACS.hosts)
-      management_epg         = lookup(v, "management_epg", local.TACACS.management_epg)
-      mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
+    for v in lookup(local.auth, "tacacs", []) : v.login_domain => merge(local.TACACS, v, {
+      accounting_include = merge(local.TACACS.accounting_include, lookup(v, "accounting_include", {}))
+      mgmt_epg_type = local.mgmt_epgs[index(local.mgmt_epgs[*].name,
         lookup(v, "management_epg", local.TACACS.management_epg))
       ].type
-      login_domain = v.login_domain
-      port         = lookup(v, "port", local.TACACS.port)
-      retries      = lookup(v, "retries", local.TACACS.retries)
-      server_monitoring = {
-        admin_state = lookup(lookup(v, "server_monitoring", {}
-        ), "admin_state", local.TACACS.server_monitoring.admin_state)
-        username = lookup(lookup(v, "server_monitoring", {}
-        ), "username", local.TACACS.server_monitoring.username)
-      }
-      timeout = lookup(v, "timeout", local.TACACS.timeout)
-      type    = "tacacs"
-    }
+      server_monitoring = merge(local.TACACS.server_monitoring, lookup(v, "server_monitoring", {}))
+      type              = "tacacs"
+    })
   }
   tacacs_providers = { for i in flatten([
     for v in local.tacacs : [
-      for s in range(length(v.hosts)) : {
-        authorization_protocol = v.authorization_protocol
-        host                   = element(v.hosts, s)
-        management_epg         = v.management_epg
-        mgmt_epg_type          = v.mgmt_epg_type
-        login_domain           = v.login_domain
-        order                  = s
-        port                   = v.port
-        retries                = v.retries
-        server_monitoring      = v.server_monitoring
-        timeout                = v.timeout
-        type                   = "tacacs"
-      }
+      for s in range(length(v.hosts)) : merge(v, {
+        host  = element(v.hosts, s)
+        order = s
+      })
     ]
   ]) : i.host => i }
   tacacs_list     = [for k, v in local.tacacs : v]
@@ -186,7 +133,7 @@ locals {
       smtp_server = {
         management_epg = lookup(lookup(
         v, "smtp_server", {}), "management_epg", local.scallhome.smtp_server.management_epg)
-        mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
+        mgmt_epg_type = local.mgmt_epgs[index(local.mgmt_epgs[*].name,
           lookup(lookup(v, "smtp_server", {}
         ), "management_epg", local.scallhome.smtp_server.management_epg))].type
         port_number = lookup(lookup(
@@ -265,7 +212,7 @@ locals {
         forwarding_facility = lookup(v, "forwarding_facility", local.SYSLOG.remote_destinations.forwarding_facility)
         hosts               = v.hosts
         management_epg      = lookup(v, "management_epg", local.SYSLOG.remote_destinations.management_epg)
-        mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
+        mgmt_epg_type = local.mgmt_epgs[index(local.mgmt_epgs[*].name,
           lookup(v, "management_epg", local.SYSLOG.remote_destinations.management_epg))
         ].type
         port          = lookup(v, "port", local.SYSLOG.remote_destinations.port)
@@ -321,7 +268,7 @@ locals {
         export_policy = merge(local.config.export_policy, lookup(v, "export_policy", {}))
         description   = lookup(e, "description", "")
         host          = e.host
-        mgmt_epg_type = var.management_epgs[index(var.management_epgs.*.name,
+        mgmt_epg_type = local.mgmt_epgs[index(local.mgmt_epgs[*].name,
           lookup(v, "management_epg", local.config.management_epg))
         ].type
       })
