@@ -3,7 +3,7 @@ locals {
   defaults  = yamldecode(file("${path.module}/defaults.yaml")).defaults.admin
   export    = lookup(var.admin, "import_export", {})
   ext_data  = lookup(var.admin, "external_data_collectors", {})
-  mgmt_epgs = var.admin.management_epgs
+  mgmt_epgs = var.admin.global_settings.management_epgs
   security  = lookup(local.aaa, "security", {})
 
   #__________________________________________________________
