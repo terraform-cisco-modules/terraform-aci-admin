@@ -160,7 +160,7 @@ locals {
         rfc_compliant = lookup(v, "rfc_compliant", local.scallhome.smart_destinations.rfc_compliant)
       }
     ]
-  ]) : "${i.policy}:${i.name}" => i }
+  ]) : "${i.policy}/${i.name}" => i }
 
 
   #__________________________________________________________
@@ -236,7 +236,7 @@ locals {
         syslog_policy       = v.syslog_policy
       }
     ]
-  ]) : "${i.syslog_policy}:${i.host}" => i }
+  ]) : "${i.syslog_policy}/${i.host}" => i }
 
 
   #__________________________________________________________
@@ -253,7 +253,7 @@ locals {
         node_id        = e
       }
     ]
-  ]) : "${i.firmware_group}:${i.node_id}" => i }
+  ]) : "${i.firmware_group}/${i.node_id}" => i }
 
 
   #__________________________________________________________
