@@ -1,30 +1,6 @@
 /*_____________________________________________________________________________________________________________________
 
 API Information:
- - Class: "UpgStatus"
- - Distinguished Name: "maintupgstatuscont/maintupgstatus-{name}"
-GUI Location:
- - Admin > Firmware > Nodes > {maintenance_group_name}
-_______________________________________________________________________________________________________________________
-*/
-# Scheduler - one per maintenance policy. The Administrator can change the status from paused to running.
-# This object exists only on the controller.
-#resource "aci_rest_managed" "maintenance_upgrade_status" {
-#  for_each   = local.firmware_update_groups
-#  class_name = "maintUpgStatus"
-#  dn         = "maintupgstatuscont/maintupgstatus-${each.key}"
-#  content = {
-#    polName = each.key
-#    #!!runStatus = each.value.running_state
-#  }
-#  #lifecycle {
-#  #  ignore_changes = [ runStatus ]
-#  #}
-#}
-
-/*_____________________________________________________________________________________________________________________
-
-API Information:
  - Class: "maintMaintP"
  - Distinguished Name: "uni/fabric/maintpol-{name}"
 GUI Location:
