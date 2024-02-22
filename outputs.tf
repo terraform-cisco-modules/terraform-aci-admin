@@ -117,7 +117,6 @@ output "external_data_collectors" {
 output "firmware" {
   description = <<-EOT
     Identifiers for:
-    Identifiers for:
       firmware:
         switches:
           firmware_group: Admin => Firmware => Switches: Firmware Updates {Update Group Name}
